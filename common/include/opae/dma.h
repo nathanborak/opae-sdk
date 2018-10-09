@@ -43,112 +43,28 @@
 extern "C" {
 #endif
 
-/**
- * Open a DMA object
- *
- * Acquires ownership of the DMA resource referred to by 'feature_token'.
- *
- * @param[in]   feature_token Pointer to a feature_token identifying resource to acquire
- *                            ownership of.
- *                            This token need to have a DMA feature.
- * @param[in]  channel_index If DMA support more that one "virtual channel",
- *                           indicate the chennel index that user want to use.
- *                           Zero indicate first channel.
- * @param[in]  flags         One of the following flags:
- *                           FPGA_OPEN_SHARED allows the resource to be opened
- *                           multiple times.
- *                           Shared resources (including buffers) are released
- *                           when all associated handles have been closed
- *                           (either explicitly with fpgaClose() or by process
- *                           termination).
- * @param[in]   dma_priv_config Private data for a spesific DMA implimentation.
- * @param[out]  dma_handle   Pointer to preallocated memory to place a handle in.
- *                           This handle will be used in subsequent API calls.
- * @param[out]  fd           Pointer to a preallocated memory to place a file descriptor.
- *                           This fd can be polled to get notification for complition.
- * @returns             FPGA_OK on success.
- */
-fpga_result fpgaDMAOpen(fpga_feature_token feature_token,
-                int channel_index,
-                fpga_dma_transfer_type type,
-                int flags,
-                void *dma_priv_config,
-                fpga_dma_handle *dma_handle,
-                int *fd);
+fpga_result fpgaDMAOpen(fpga_dma_handle *dma_handle,
+			fpga_feature_token feature_token,
+			int flags,
+			void *dma_priv_config,
+			int *fd);
 
-/**
- * Close a previously opened DMA object
- *
- * Relinquishes ownership of a previously fpgaDMAOpen()ed resource. This enables
- * others to acquire ownership if the resource was opened exclusively.
- *
- * @param[in]   dma_handle  Handle to previously opened DMA object
- * @returns FPGA_OK on success.
- */
 fpga_result fpgaDmaClose(fpga_dma_handle dma_handle);
 
-/**
- * Start a blocking transfer.
- *
- * Start a sync transfer and return only all the data was copied.
- *
- * @param[in]   dma_handle      as populated by fpgaDMAOpen()
- * @param[in]   dma_xfer        encapsulation of all the information about the transfer
- *                              as populated by fpgaDMATransferInit and set by fpgaDMATransferSet functions
- *
- * @returns FPGA_OK on success.
- */
 fpga_result fpgaDMATransferSync(fpga_dma_handle dma_handle, fpga_dma_transfer dma_xfer);
 
-/**
- * Start a none blocking transfer (poll fd).
- *
- * Start an Async transfer (Return immediately)
- * User can poll the dma_handle fd to discover when all the data was copied.
- *
- * @param[in]   dma_handle      as populated by fpgaDMAOpen()
- * @param[in]   dma_xfer        encapsulation of all the information about the transfer
- *                              as populated by fpgaDMATransferInit and set by fpgaDMATransferSet functions
- *
- * @returns FPGA_OK on success.
- */
 fpga_result fpgaDMATransferPoll(fpga_dma_handle dma_handle, fpga_dma_transfer dma_xfer);
 
-/**
- * Start a none blocking transfer (callback).
- *
- * Start an Async transfer (Return immediately)
- * Callback will be invoke when the transfer is completed.
- *
- * @param[in]   dma_handle      as populated by fpgaDMAOpen()
- * @param[in]   dma_xfer        encapsulation of all the information about the transfer
- *                              as populated by fpgaDMATransferInit and set by fpgaDMATransferSet functions
- * @param[in]   cb              Function to call when the transfer is completed
- * @param[in]   context         value to pass to the callback function
- *
- * @returns FPGA_OK on success.
- */
 fpga_result fpgaDMATransferCB(fpga_dma_handle dma,
                         fpga_dma_transfer dma_xfer,
                         fpga_dma_transfer_cb cb,
                         void *context);
 
-/**
- * Post a buffer for Rx streaming
- *
- * @param[in]   dma_handle      as populated by fpgaDMAOpen()
- * @param[in]   dma_xfer        encapsulation of all the information about the buffer
- *
- * @returns FPGA_OK on success.
- */
-fpga_result
-fpgaDMAPostBuffer(fpga_dma_handle dma,fpga_dma_transfer *rx_stream_info);
-
-
+fpga_result fpgaDMAPostBuffer(fpga_dma_handle dma,
+			      fpga_dma_transfer *rx_stream_info);
 
 #ifdef __cplusplus
 } // extern "C"
 #endif // __cplusplus
 
 #endif // __FPGA_DMA_H__
-
