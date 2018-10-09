@@ -63,9 +63,13 @@
 #ifndef __FPGA_TYPES_H__
 #define __FPGA_TYPES_H__
 
-#include <stdint.h>
-#include <stddef.h>
 #include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <pthread.h>
+#include <semaphore.h>
+#include <opae/types.h>
+#include <opae/sysobject.h>
 #include <opae/types_enum.h>
 
 /**
@@ -245,18 +249,23 @@ typedef void *fpga_sub_feature;
 typedef void *fpga_dma_handle;
 typedef void *fpga_feature_handle;
 
-/**
- * Handle to an DMA transfer
- *
- * A valid `fpga_dma_transfer` object, as populated by fpgaDMATransferInit()
- * the `fpga_dma_transfer` objects encapsulate all the information about an transfer
- * Set/Get values with fpgaDMATransferSetxxxxx and fpgaDMATransferGetxxxxx
- *
- */
-typedef void *fpga_dma_transfer;
-
 // Callback for asynchronous DMA transfers
 typedef void (*fpga_dma_transfer_cb)(void *context);
 
+// The `fpga_dma_transfer` objects encapsulate all the information about an transfer
+typedef struct fpga_dma_transfer {
+	uint64_t src;
+	uint64_t dst;
+	uint64_t len;
+	fpga_dma_transfer_type_t transfer_type;
+	fpga_dma_tx_ctrl_t tx_ctrl;
+	fpga_dma_rx_ctrl_t rx_ctrl;
+	fpga_dma_transfer_cb cb;
+	bool eop_status;
+	void *context;
+	size_t rx_bytes;
+	pthread_mutex_t tf_mutex;
+	sem_t tf_status; // When locked, the transfer in progress
+} fpga_dma_transfer;
 
 #endif // __FPGA_TYPES_H__

@@ -180,6 +180,26 @@ struct _fpga_object {
 	fpga_object *objects;
 };
 
+typedef struct __attribute__ ((__packed__)) {
+	uint64_t dfh;
+	uint64_t feature_uuid_lo;
+	uint64_t feature_uuid_hi;
+} dfh_feature_t;
+
+typedef union {
+	uint64_t reg;
+	struct {
+		uint64_t feature_type:4;
+		uint64_t reserved_8:8;
+		uint64_t afu_minor:4;
+		uint64_t reserved_7:7;
+		uint64_t end_dfh:1;
+		uint64_t next_dfh:24;
+		uint64_t afu_major:4;
+		uint64_t feature_id:12;
+	} bits;
+} dfh_reg_t;
+
 /** Device-wide unique FPGA feature resource identifier */
 struct _fpga_feature_token {
 	uint64_t magic;
@@ -189,6 +209,15 @@ struct _fpga_feature_token {
 	fpga_token token;
 	struct _fpga_feature_token *next;
 };
+
+/* Queue containing pending transactions */
+typedef struct qinfo {
+	int read_index;
+	int write_index;
+	fpga_dma_transfer_t queue[FPGA_DMA_MAX_INFLIGHT_TRANSACTIONS];
+	sem_t entries; // Counting semaphore, count represents available entries in queue
+	pthread_mutex_t qmutex; // Gain exclusive access before queue operations
+} qinfo_t;
 
 /** Process-wide unique FPGA feature handle */
 struct _fpga_feature_handle {

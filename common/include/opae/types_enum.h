@@ -168,7 +168,22 @@ typedef enum {
     FPGA_TO_HOST_MM,    // Memory mapped FPGA interface
     FPGA_TO_FPGA_MM,    // Memory mapped FPGA interface
     FPGA_MAX_TRANSFER_TYPE
-}fpga_dma_transfer_type;
+} fpga_dma_transfer_type_t;
 
+// TX control values
+typedef enum {
+	TX_NO_PACKET = 0, // deterministic length transfer
+	GENERATE_SOP,
+	GENERATE_EOP,
+	GENERATE_SOP_AND_EOP,
+	FPGA_MAX_TX_CTRL
+} fpga_dma_tx_ctrl_t;
+
+// RX control values
+typedef enum {
+	RX_NO_PACKET = 0, // deterministic length transfer
+	END_ON_EOP,
+	FPGA_MAX_RX_CTRL
+} fpga_dma_rx_ctrl_t;
 
 #endif // __FPGA_TYPES_ENUM_H__
