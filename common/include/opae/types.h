@@ -277,10 +277,8 @@ typedef struct fpga_dma_transfer {
 	fpga_dma_tx_ctrl_t tx_ctrl;
 	fpga_dma_rx_ctrl_t rx_ctrl;
 
-	// Worker thread, callback and fd (when callback == nullptr)
-	pthread_t thread_id;
+	// Transfer callback and fd (fd used when cb is null)
 	fpga_dma_transfer_cb cb;
-	void *context;
 	int fd;
 
 	// For non-preallocated buffers

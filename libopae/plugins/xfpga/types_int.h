@@ -40,6 +40,8 @@
 #include <opae/sysobject.h>
 #include <opae/types_enum.h>
 
+#include "thpool.h"
+
 #define SYSFS_PATH_MAX 256
 #define SYSFS_FPGA_CLASS_PATH "/sys/class/fpga"
 #define FPGA_DEV_PATH "/dev"
@@ -220,7 +222,7 @@ struct _fpga_feature_handle {
 	uint64_t mmio_offset;
 	uint64_t feature_base;
 	uint64_t feature_offset;
-	fpga_sub_feature capability;
+	fpga_sub_feature feature_data;
 	fpga_event_handle *eh_root;
 };
 
@@ -267,25 +269,25 @@ typedef struct __attribute__((__packed__)) _fpga_dma_desc {
 	_fpga_dma_desc_ctrl_t control;
 } _fpga_dma_desc;
 
-#define DMA_BUFFER_POOL_SIZE 8
-
 /* Queue dispatching transfers to the hardware */
-typedef struct _fpga_dma_transfer_q {
+typedef struct fpga_dma_transfer_q {
 	int read_index;
 	int write_index;
 	fpga_dma_transfer *queue; // Transfers queue
 	sem_t entries; // Counting semaphore, count represents available entries in queue
 	pthread_mutex_t qmutex; // Gain exclusive access before queue operations
-} _fpga_dma_transfer_q;
+} fpga_dma_transfer_q;
 
-/* DMA specific feature information which it is stored in the handle */
-struct _fpga_dma_capability {
+#define DMA_BUFFER_POOL_SIZE 8
+
+/* DMA specific sub-feature information which it is stored in the handle */
+struct _fpga_dma_sub_feature {
 	// Channel type
 	fpga_dma_channel_type_t ch_type;
+	uint64_t ch_number;
 
 	// DMA channel information
 	uint64_t cpu_affinity;
-	uint64_t dma_channel;
 	uint64_t ring_size;
 
 	// CSR layout
@@ -298,11 +300,15 @@ struct _fpga_dma_capability {
 	uint64_t dma_ase_cntl_base;
 	uint64_t dma_ase_data_base;
 
+	// Channel-local threadpool and master
+	threadpool thpool;
+	pthread_t thread_id;
+
 	// Channel-local pinned buffers
 	fpga_dma_buffer buffer_pool[DMA_BUFFER_POOL_SIZE];
 
 	// Channel-local queue of transfers
-	_fpga_dma_transfer_q dma_transfer_queue;
+	fpga_dma_transfer_q dma_transfer_queue;
 
 	// Channel-local index of the next available transfer in the dispatcher queue
 	uint64_t next_avail_transfer_idx;
