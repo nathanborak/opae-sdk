@@ -63,13 +63,15 @@
 #ifndef __FPGA_TYPES_H__
 #define __FPGA_TYPES_H__
 
+#ifndef _GNU_SOURCE
+#define _GNU_SOURCE
+#endif
+
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <pthread.h>
 #include <semaphore.h>
-#include <opae/types.h>
-#include <opae/sysobject.h>
 #include <opae/types_enum.h>
 
 /**

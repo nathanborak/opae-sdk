@@ -9,6 +9,11 @@
  ********************************/
 
 #define _POSIX_C_SOURCE 200809L
+
+#ifndef _GNU_SOURCE
+#define _GNU_SOURCE
+#endif
+
 #include <unistd.h>
 #include <signal.h>
 #include <stdio.h>
@@ -16,6 +21,9 @@
 #include <pthread.h>
 #include <errno.h>
 #include <time.h>
+
+#undef  _GNU_SOURCE
+
 #if defined(__linux__)
 #include <sys/prctl.h>
 #endif
