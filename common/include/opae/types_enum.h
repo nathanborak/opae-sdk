@@ -186,4 +186,12 @@ typedef enum {
 	FPGA_MAX_RX_CTRL
 } fpga_dma_rx_ctrl_t;
 
+// Channel types
+typedef enum {
+	INVALID_TYPE = 0,
+	TX_ST,
+	RX_ST,
+	MM,
+} fpga_dma_channel_type_t;
+
 #endif // __FPGA_TYPES_ENUM_H__

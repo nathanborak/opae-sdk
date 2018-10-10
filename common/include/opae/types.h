@@ -252,20 +252,54 @@ typedef void *fpga_feature_handle;
 // Callback for asynchronous DMA transfers
 typedef void (*fpga_dma_transfer_cb)(void *context);
 
+typedef struct fpga_dma_buffer {
+	uint64_t *dma_buf_ptr;
+	uint64_t dma_buf_wsid;
+	uint64_t dma_buf_iova;
+	uint64_t dma_buf_len;
+} fpga_dma_buffer;
+
+typedef void *fpga_dma_desc;
+
+/* Queue dispatching descriptors (PDs) to the hardware */
+typedef struct fpga_dma_desc_q {
+	int read_index;
+	int write_index;
+	fpga_dma_desc *queue; // transfers queue
+	sem_t entries; // Counting semaphore, count represents available entries in queue
+	pthread_mutex_t qmutex; // Gain exclusive access before queue operations
+} fpga_dma_desc_q;
+
 // The `fpga_dma_transfer` objects encapsulate all the information about an transfer
 typedef struct fpga_dma_transfer {
-	uint64_t src;
-	uint64_t dst;
-	uint64_t len;
+	// Transfer information
 	fpga_dma_transfer_type_t transfer_type;
 	fpga_dma_tx_ctrl_t tx_ctrl;
 	fpga_dma_rx_ctrl_t rx_ctrl;
+
+	// Worker thread, callback and fd (when callback == nullptr)
+	pthread_t thread_id;
 	fpga_dma_transfer_cb cb;
-	bool eop_status;
 	void *context;
+	int fd;
+
+	// For non-preallocated buffers
+	uint64_t src;
+	uint64_t dst;
+	uint64_t len;
+
+	// For pre-allocated buffers
+	uint64_t wsid;
+
+	// Transfer pinned buffers
+	fpga_dma_buffer *buffer_pool;
+
+	// Hold transfer state
+	bool eop_status;
 	size_t rx_bytes;
-	pthread_mutex_t tf_mutex;
-	sem_t tf_status; // When locked, the transfer in progress
+
+	// When locked, the transfer in progress
+	sem_t tf_status;
 } fpga_dma_transfer;
 
 #endif // __FPGA_TYPES_H__
