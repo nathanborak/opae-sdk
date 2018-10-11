@@ -1,1 +1,1 @@
-include_directories(@OPAE_SDK_SOURCE@/common/include)
+include_directories(@OPAE_INCLUDE_DIR@)
