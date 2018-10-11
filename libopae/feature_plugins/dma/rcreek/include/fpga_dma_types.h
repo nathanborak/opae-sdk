@@ -39,53 +39,10 @@
 extern "C" {
 #endif
 
-// Callback for asynchronous DMA transfers
-typedef void (*fpga_dma_transfer_cb)(void *context);
-
-// Supported Streaming DMA transfers
-typedef enum {
-	HOST_MM_TO_FPGA_ST = 0, // host to AFU sreaming
-	FPGA_ST_TO_HOST_MM,     // AFU to host streaming
-	FPGA_MM_TO_FPGA_ST,     // local mem to AFU streaming
-	FPGA_ST_TO_FPGA_MM,     // AFU to local mem streaming
-	HOST_TO_FPGA_MM,	// Memory mapped FPGA interface
-	FPGA_TO_HOST_MM,	// Memory mapped FPGA interface
-	FPGA_TO_FPGA_MM,	// Memory mapped FPGA interface
-	TERMINATE_THREAD,	// Cause the thread to exit
-	FPGA_MAX_TRANSFER_TYPE
-} fpga_dma_transfer_type_t;
-
-// Supported TX control values
-typedef enum {
-	TX_NO_PACKET = 0, // deterministic length transfer
-	GENERATE_SOP,
-	GENERATE_EOP,
-	GENERATE_SOP_AND_EOP,
-	FPGA_MAX_TX_CTRL
-} fpga_dma_tx_ctrl_t;
-
-// Supported RX control values
-typedef enum {
-	RX_NO_PACKET = 0, // deterministic length transfer
-	END_ON_EOP,
-	FPGA_MAX_RX_CTRL
-} fpga_dma_rx_ctrl_t;
-
-// Channel types
-typedef enum {
-	INVALID_TYPE = 0,
-	TX_ST,
-	RX_ST,
-	MM,
-} fpga_dma_channel_type_t;
-
 typedef struct _fpga_dma_channel_desc {
 	uint32_t index;
 	fpga_dma_channel_type_t ch_type;
-}fpga_dma_channel_desc;
-
-// Opaque object that describes a DMA transfer
-typedef void *fpga_dma_transfer;
+} fpga_dma_channel_desc;
 
 // Opaque object that describes DMA
 typedef void *fpga_dma_handle;

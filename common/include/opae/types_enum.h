@@ -167,7 +167,8 @@ typedef enum {
     HOST_TO_FPGA_MM,    // Memory mapped FPGA interface
     FPGA_TO_HOST_MM,    // Memory mapped FPGA interface
     FPGA_TO_FPGA_MM,    // Memory mapped FPGA interface
-    FPGA_MAX_TRANSFER_TYPE
+    FPGA_MAX_TRANSFER_TYPE,
+    TERMINATE_THREAD
 } fpga_dma_transfer_type_t;
 
 // TX control values
