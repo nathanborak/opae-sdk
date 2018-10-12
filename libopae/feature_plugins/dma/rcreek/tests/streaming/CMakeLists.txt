@@ -38,7 +38,7 @@ add_executable(fpga_dma_st_test
                fpga_pattern_gen.c)
 
 set_install_rpath(fpga_dma_st_test)
-target_link_libraries(fpga_dma_st_test opae-c fpga_dma_lib)
+target_link_libraries(fpga_dma_st_test opae-c fpga_dma_lib uuid rt)
 set_property(TARGET fpga_dma_st_test PROPERTY C_STANDARD 99)
 
 install(TARGETS fpga_dma_st_test

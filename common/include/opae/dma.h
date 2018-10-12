@@ -67,7 +67,8 @@ fpga_result fpgaDmaClose(fpga_dma_handle *dma_handle);
  *
  * @returns FPGA_OK on success.
  */
-fpga_result fpgaDmaTransferSync(fpga_dma_handle dma_handle, fpga_dma_transfer dma_xfer);
+fpga_result fpgaDmaTransferSync(fpga_dma_handle dma_handle,
+				fpga_dma_transfer dma_xfer);
 
 /**
  * Start a none blocking transfer (poll fd).

@@ -38,6 +38,6 @@ add_subdirectory(utils)
 add_subdirectory(unified_dma)
 
 # tests
-# add_subdirectory(tests/queue)
-# add_subdirectory(tests/pool)
-# add_subdirectory(tests/streaming)
+add_subdirectory(tests/queue)
+add_subdirectory(tests/pool)
+add_subdirectory(tests/streaming)

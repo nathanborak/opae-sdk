@@ -33,18 +33,17 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -flto")
 
 add_library(fpga_dma_lib SHARED
             open_close.c
-            # m2s.c
-            # m2m.c
-            # s2m.c
-            # fpga_dma_st.c
-            # TransactionCompleteWorker.c
-            # globals.c
-            # signal_handler.c
-	    )
+            m2s.c
+            m2m.c
+            s2m.c
+            fpga_dma_st.c
+            TransactionCompleteWorker.c
+            globals.c
+            signal_handler.c)
 
 set_install_rpath(fpga_dma_lib)
 
-target_link_libraries(fpga_dma_lib utils hwloc)
+target_link_libraries(fpga_dma_lib utils hwloc m rt)
 
 set_target_properties(fpga_dma_lib PROPERTIES
   VERSION ${INTEL_FPGA_API_VERSION}
