@@ -114,8 +114,6 @@ fpga_result fpgaDmaTransferCB(fpga_dma_handle dma,
 fpga_result fpgaDmaPostBuffer(fpga_dma_handle dma,
 			      fpga_dma_transfer *rx_stream_info);
 
-
-/* clang-format off */
 /**
  * Enumerate DMA channel resources present in the FPGA
  *
@@ -376,9 +374,8 @@ fpga_result fpgaDmaTransferSetRxControl(fpga_dma_transfer transfer,
  * @param[in]  ctxt        Callback context
  * @returns                FPGA_OK on success, return code otherwise
  */
-fpga_result
-fpgaDmaTransferSetTransferCallback(fpga_dma_transfer transfer,
-				   fpga_dma_transfer_cb cb, void *ctxt);
+fpga_result fpgaDmaTransferSetTransferCallback(fpga_dma_transfer transfer,
+					       fpga_dma_transfer_cb cb, void *ctxt);
 
 /**
  * fpgaDmaTransferGetBytesTransferred
@@ -396,9 +393,8 @@ fpgaDmaTransferSetTransferCallback(fpga_dma_transfer transfer,
  *
  * @returns                FPGA_OK on success, return code otherwise
  */
-fpga_result
-fpgaDmaTransferGetBytesTransferred(fpga_dma_transfer transfer,
-				   size_t *rx_bytes);
+fpga_result fpgaDmaTransferGetBytesTransferred(fpga_dma_transfer transfer,
+					       size_t *rx_bytes);
 
 /**
  * fpgaDmaTransferCheckEopArrived

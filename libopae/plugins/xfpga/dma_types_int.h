@@ -28,15 +28,15 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <pthread.h>
+#include <signal.h>
 
 #include <opae/types.h>
 #include <opae/sysobject.h>
 #include <opae/types_enum.h>
 #include <opae/dma_types.h>
 
-#include "thpool.h"
-
 #define DMA_BUFFER_POOL_SIZE 8
+#define FPGA_DMA_MAX_INFLIGHT_TRANSACTIONS 100000
 
 #ifndef DMA_TYPES_INT_H
 #define DMA_TYPES_INT_H
@@ -101,7 +101,7 @@ typedef struct _fpga_dma_transfer {
 	// Transfer callback and fd (fd used when cb is null)
 	fpga_dma_transfer_cb cb;
 	int fd;
-	void* context;
+	void *context;
 
 	// For non-preallocated buffers
 	uint64_t src;
@@ -144,7 +144,7 @@ typedef struct fpga_dma_desc_q {
 } fpga_dma_desc_q;
 
 /* DMA-channel specific information which it is stored in the fpga_dma_channel_handle */
-struct _fpga_dma_channel {
+struct _fpga_dma_channel_mgr {
 	// Channel type
 	fpga_dma_channel_type_t ch_type;
 	uint64_t ch_number;
@@ -164,11 +164,10 @@ struct _fpga_dma_channel {
 	uint64_t dma_ase_data_base;
 
 	// Channel-local threadpool and master
-	threadpool thpool;
-	pthread_t thread_id;
+	thread_pool_item thread_pool;
 
 	// Channel-local pinned buffers
-	struct _buffer_pool buffer_pool[DMA_BUFFER_POOL_SIZE];
+	buffer_pool_item buffer_pool;
 
 	// Channel-local queue of transfers
 	fpga_dma_transfer_q dma_transfer_queue;
@@ -181,5 +180,117 @@ struct _fpga_dma_channel {
 	// the dispatcher queue indexed by next_avail_transfer_idx
 	uint64_t unused_transfer_count;
 };
+
+typedef struct qinfo {
+	int read_index;
+	int write_index;
+	int num_free;
+	fpga_dma_transfer_t *queue[FPGA_DMA_MAX_INFLIGHT_TRANSACTIONS];
+	fpga_dma_transfer_t *free_queue[FPGA_DMA_MAX_INFLIGHT_TRANSACTIONS];
+	// Counting semaphore, count represents available entries
+	// in queue. mutex to gain exclusive access before queue operations
+	sem_pool_item *q_semaphore;
+	pthread_spinlock_t q_mutex;
+} qinfo_t;
+
+typedef struct _internal_channel_desc {
+	fpga_dma_channel_desc desc;
+	uint32_t mmio_num;
+	uint64_t mmio_offset;
+	uint64_t mmio_va;
+	uint64_t dma_base;
+	uint64_t dma_csr_base;
+	uint64_t dma_desc_base;
+} internal_channel_desc;
+
+// *MUST* be first element of each handle type
+typedef struct _handle_common {
+	uint32_t magic_id;
+	struct _fpga_dma_handle *dma_h;
+	fpga_handle fpga_h;
+	internal_channel_desc *chan_desc;
+	uint64_t dma_channel;
+	fpga_dma_channel_type_t ch_type;
+
+	// Interrupt event handle
+	fpga_event_handle eh;
+	// Transaction queue (model as a fixed-size circular buffer)
+	qinfo_t transferRequestq;
+} handle_common;
+
+typedef struct _fpga_dma_handle {
+	handle_common main_header;
+
+	uint32_t num_open_channels;
+	void **open_channels;
+
+	// For protection for sem/mutex manipulation
+	// TODO: These can be globals, right?
+	pthread_spinlock_t sem_mutex;
+	pthread_spinlock_t mutex_mutex;
+	pthread_spinlock_t buffer_mutex;
+
+	sem_pool_item *sem_in_use_head;
+	sem_pool_item *sem_free_head;
+	mutex_pool_item *mutex_in_use_head;
+	mutex_pool_item *mutex_free_head;
+	buffer_pool_item *buffer_in_use_head;
+	buffer_pool_item *buffer_free_head;
+
+	// Descriptors for channels (array)
+	internal_channel_desc *chan_descs;
+	uint32_t num_avail_channels;
+
+	pthread_t completion_thread_id;
+	sem_t completion_thread_sem;
+
+	pthread_t m2s_thread_id;
+	sem_t m2s_thread_sem;
+	pthread_t s2m_thread_id;
+	sem_t s2m_thread_sem;
+	pthread_t m2m_thread_id;
+	sem_t m2m_thread_sem;
+	// Transaction completion queue (model as a fixed-size circular buffer)
+	qinfo_t transferCompleteq;
+
+	struct sigaction old_action;
+	volatile uint32_t *CsrControl;
+
+#define FPGA_DMA_MAX_SMALL_BUFFERS 4
+	uint32_t num_smalls;
+} fpga_dma_handle_t;
+
+typedef struct _m2s_dma_handle {
+	handle_common header;
+} m2s_dma_handle_t;
+
+typedef struct _s2m_dma_handle {
+	handle_common header;
+
+	uint64_t dma_rsp_base;
+	uint64_t dma_streaming_valve_base;
+
+	// Index of the next available descriptor in the dispatcher queue
+	uint64_t next_avail_desc_idx;
+	// Total number of unused descriptors in the dispatcher queue
+	// Leftover descriptors are reused for subsequent transfers
+	// Note: Count includes the next available descriptor in
+	// the dispatcher queue indexed by next_avail_desc_idx
+	uint64_t unused_desc_count;
+} s2m_dma_handle_t;
+
+typedef struct _m2m_dma_handle {
+	handle_common header;
+
+	uint64_t cur_ase_page;
+
+	uint64_t dma_ase_cntl_base;
+	uint64_t dma_ase_data_base;
+
+	// magic number buffer
+	volatile uint64_t *magic_buf;
+	uint64_t magic_iova;
+	uint64_t magic_wsid;
+} m2m_dma_handle_t;
 
 #endif

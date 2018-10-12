@@ -205,20 +205,8 @@
 #define FPGA_DMA_MAX_BUF 8
 
 // Max. async transfers in progress
-#define FPGA_DMA_MAX_INFLIGHT_TRANSACTIONS 100000
 #define INVALID_CHANNEL (0x7fffffffffffffffULL)
 
-typedef struct qinfo {
-	int read_index;
-	int write_index;
-	int num_free;
-	fpga_dma_transfer_t *queue[FPGA_DMA_MAX_INFLIGHT_TRANSACTIONS];
-	fpga_dma_transfer_t *free_queue[FPGA_DMA_MAX_INFLIGHT_TRANSACTIONS];
-	// Counting semaphore, count represents available entries
-	// in queue. mutex to gain exclusive access before queue operations
-	sem_pool_item *q_semaphore;
-	pthread_spinlock_t q_mutex;
-} qinfo_t;
 
 #define FPGA_DMA_MAGIC_ID (0x9de448f7)
 #define FPGA_DMA_TX_CHANNEL_MAGIC_ID (0x48f749de)
@@ -235,106 +223,6 @@ typedef struct qinfo {
 #define IS_CHANNEL_HANDLE(dma_h)                                               \
 	(IS_RX_CHANNEL_HANDLE(dma_h) || IS_TX_CHANNEL_HANDLE(dma_h)            \
 	 || IS_MSGDMA_HANDLE(dma_h))
-
-typedef struct _internal_channel_desc {
-	fpga_dma_channel_desc desc;
-	uint32_t mmio_num;
-	uint64_t mmio_offset;
-	uint64_t mmio_va;
-	uint64_t dma_base;
-	uint64_t dma_csr_base;
-	uint64_t dma_desc_base;
-} internal_channel_desc;
-
-// *MUST* be first element of each handle type
-typedef struct _handle_common {
-	uint32_t magic_id;
-	struct _fpga_dma_handle *dma_h;
-	fpga_handle fpga_h;
-	internal_channel_desc *chan_desc;
-	uint64_t dma_channel;
-	fpga_dma_channel_type_t ch_type;
-
-	// Interrupt event handle
-	fpga_event_handle eh;
-	// Transaction queue (model as a fixed-size circular buffer)
-	qinfo_t transferRequestq;
-} handle_common;
-
-typedef struct _fpga_dma_handle {
-	handle_common main_header;
-
-	uint32_t num_open_channels;
-	void **open_channels;
-
-	// For protection for sem/mutex manipulation
-	// TODO: These can be globals, right?
-	pthread_spinlock_t sem_mutex;
-	pthread_spinlock_t mutex_mutex;
-	pthread_spinlock_t buffer_mutex;
-
-	sem_pool_item *sem_in_use_head;
-	sem_pool_item *sem_free_head;
-	mutex_pool_item *mutex_in_use_head;
-	mutex_pool_item *mutex_free_head;
-	buffer_pool_item *buffer_in_use_head;
-	buffer_pool_item *buffer_free_head;
-
-	// Descriptors for channels (array)
-	internal_channel_desc *chan_descs;
-	uint32_t num_avail_channels;
-
-	pthread_t completion_thread_id;
-	sem_t completion_thread_sem;
-
-	pthread_t m2s_thread_id;
-	sem_t m2s_thread_sem;
-	pthread_t s2m_thread_id;
-	sem_t s2m_thread_sem;
-	pthread_t m2m_thread_id;
-	sem_t m2m_thread_sem;
-	// Transaction completion queue (model as a fixed-size circular buffer)
-	qinfo_t transferCompleteq;
-
-	struct sigaction old_action;
-	volatile uint32_t *CsrControl;
-
-#define FPGA_DMA_MAX_SMALL_BUFFERS 4
-	uint32_t num_smalls;
-} fpga_dma_handle_t;
-
-typedef struct _m2s_dma_handle {
-	handle_common header;
-} m2s_dma_handle_t;
-
-typedef struct _s2m_dma_handle {
-	handle_common header;
-
-	uint64_t dma_rsp_base;
-	uint64_t dma_streaming_valve_base;
-
-	// Index of the next available descriptor in the dispatcher queue
-	uint64_t next_avail_desc_idx;
-	// Total number of unused descriptors in the dispatcher queue
-	// Leftover descriptors are reused for subsequent transfers
-	// Note: Count includes the next available descriptor in
-	// the dispatcher queue indexed by next_avail_desc_idx
-	uint64_t unused_desc_count;
-} s2m_dma_handle_t;
-
-typedef struct _m2m_dma_handle {
-	handle_common header;
-
-	uint64_t cur_ase_page;
-
-	uint64_t dma_ase_cntl_base;
-	uint64_t dma_ase_data_base;
-
-	// magic number buffer
-	volatile uint64_t *magic_buf;
-	uint64_t magic_iova;
-	uint64_t magic_wsid;
-} m2m_dma_handle_t;
 
 typedef union {
 	uint32_t reg;

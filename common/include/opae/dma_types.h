@@ -90,6 +90,7 @@ typedef enum _pool_type {
     POOL_SEMA,
     POOL_MUTEX,
     POOL_BUFFERS,
+    POOL_THREADS,
 } pool_type;
 
 typedef struct _pool_hdr {
@@ -97,7 +98,7 @@ typedef struct _pool_hdr {
     uint32_t destroyed;
 } pool_header;
 
-// Pinned buffers
+// Pinned buffers pool
 typedef struct _buffer_pool {
     struct _buffer_pool *next;
     pool_header header;
@@ -107,18 +108,26 @@ typedef struct _buffer_pool {
     uint64_t dma_buf_iova;
 } buffer_pool_item;
 
-// Semaphore / mutex pool
+// Semaphore pool
 typedef struct _sem_pool {
     struct _sem_pool *next;
     pool_header header;
     sem_t m_semaphore;
 } sem_pool_item;
 
+// Mutex pool
 typedef struct _mutex_pool {
     struct _mutex_pool *next;
     pool_header header;
     pthread_mutex_t m_mutex;
 } mutex_pool_item;
+
+// Mutex pool
+typedef struct _thread_pool {
+    struct _mutex_pool *next;
+    pool_header header;
+    pthread_mutex_t m_mutex;
+} thread_pool_item;
 
 // Opaque type for DMA descriptors
 typedef void *fpga_dma_desc;
