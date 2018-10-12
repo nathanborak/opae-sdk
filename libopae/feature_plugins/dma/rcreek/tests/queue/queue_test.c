@@ -168,7 +168,7 @@ void *queue_thread(void *ctx)
 
 	for (i = 0; i < NUM_TRANSFERS; i++) {
 		if (FPGA_OK
-		    != fpgaDMATransferInit(th->dma_ch,
+		    != fpgaDmaTransferInit(th->dma_ch,
 					   (fpga_dma_transfer *)&xfers[i])) {
 			fprintf(stderr, "TransferInit failed.\n");
 		}
@@ -187,7 +187,7 @@ void *queue_thread(void *ctx)
 
 		clock_gettime(CLOCK_MONOTONIC, &start);
 		for (j = 0; j < NUM_TRANSFERS; j++) {
-			fpgaDMAEnqueue(queue, xfers[i]);
+			fpgaDmaEnqueue(queue, xfers[i]);
 		}
 
 		clock_gettime(CLOCK_MONOTONIC, &end);
@@ -195,21 +195,21 @@ void *queue_thread(void *ctx)
 
 		clock_gettime(CLOCK_MONOTONIC, &start);
 		for (j = 0; j < NUM_TRANSFERS; j++) {
-			fpgaDMADequeue(queue, &xfers_ret[i]);
+			fpgaDmaDequeue(queue, &xfers_ret[i]);
 		}
 
 		clock_gettime(CLOCK_MONOTONIC, &end);
 		tot_deq_time += getTime(start, end);
 
-		res = fpgaDMAQueueDestroy(th->dma_h, queue, true);
+		res = fpgaDmaQueueDestroy(th->dma_h, queue, true);
 		if (FPGA_OK != res) {
-			fprintf(stderr, "fpgaDMAQueueDestroy failure.\n");
+			fprintf(stderr, "fpgaDmaQueueDestroy failure.\n");
 		}
 
 #if 0
-		res = fpgaDMAQueueInit(th->dma_h, queue);
+		res = fpgaDmaQueueInit(th->dma_h, queue);
 		if (FPGA_OK != res) {
-			fprintf(stderr, "fpgaDMAQueueInit failure.\n");
+			fprintf(stderr, "fpgaDmaQueueInit failure.\n");
 		}
 #endif
 	}
@@ -225,11 +225,11 @@ void *queue_thread(void *ctx)
 	// Time getting free:
 	// Create BATCH_SIZE items, get them in a block
 	for (i = 0; i < BATCH_SIZE; i++) {
-		fpgaDMAEnqueue(queue, xfers[i]);
+		fpgaDmaEnqueue(queue, xfers[i]);
 	}
 
 	for (i = 0; i < BATCH_SIZE; i++) {
-		fpgaDMADequeue(queue, &xfers_ret[i]);
+		fpgaDmaDequeue(queue, &xfers_ret[i]);
 	}
 
 	for (i = 0; i < ITERATIONS; i++) {
@@ -239,7 +239,7 @@ void *queue_thread(void *ctx)
 		for (k = 0; k < NUM_TRANSFERS; k += BATCH_SIZE) {
 			clock_gettime(CLOCK_MONOTONIC, &start);
 			for (j = 2 * BATCH_SIZE; j < 3 * BATCH_SIZE; j++) {
-				fpgaDMAEnqueue(queue, xfers[j]);
+				fpgaDmaEnqueue(queue, xfers[j]);
 			}
 
 			clock_gettime(CLOCK_MONOTONIC, &end);
@@ -247,7 +247,7 @@ void *queue_thread(void *ctx)
 
 			clock_gettime(CLOCK_MONOTONIC, &start);
 			for (j = 2 * BATCH_SIZE; j < 3 * BATCH_SIZE; j++) {
-				fpgaDMADequeue(queue, &xfers_ret[j]);
+				fpgaDmaDequeue(queue, &xfers_ret[j]);
 			}
 			clock_gettime(CLOCK_MONOTONIC, &end);
 			tot_deq_time += getTime(start, end);
@@ -255,7 +255,7 @@ void *queue_thread(void *ctx)
 	}
 
 	for (i = 0; i < NUM_TRANSFERS; i++) {
-		fpgaDMATransferDestroy(th->dma_ch, (void **)&xfers[i]);
+		fpgaDmaTransferDestroy(th->dma_ch, (void **)&xfers[i]);
 	}
 
 	metrics->enq_batch_items_per_sec =
@@ -340,12 +340,12 @@ int main(int argc, char *argv[])
 	res = fpgaReset(afc_h);
 	ON_ERR_GOTO(res, out_unmap, "fpgaReset");
 
-	res = fpgaDMAOpen(afc_h, &dma_handle);
-	ON_ERR_GOTO(res, out_unmap, "fpgaDMAOpen");
+	res = fpgaDmaOpen(afc_h, &dma_handle);
+	ON_ERR_GOTO(res, out_unmap, "fpgaDmaOpen");
 
 	// Enumerate DMA handles
-	res = fpgaDMAEnumerateChannels(dma_handle, 0, NULL, &count);
-	ON_ERR_GOTO(res, dma_close, "fpgaDMAEnumerateChannels");
+	res = fpgaDmaEnumerateChannels(dma_handle, 0, NULL, &count);
+	ON_ERR_GOTO(res, dma_close, "fpgaDmaEnumerateChannels");
 
 	if (count < 1) {
 		printf("Error: DMA channels not found\n");
@@ -355,16 +355,16 @@ int main(int argc, char *argv[])
 
 	fpga_dma_channel_desc *descs = (fpga_dma_channel_desc *)malloc(
 		sizeof(fpga_dma_channel_desc) * count);
-	res = fpgaDMAEnumerateChannels(dma_handle, count, descs, &count);
-	ON_ERR_GOTO(res, free_descs, "fpgaDMAEnumerateChannels");
-	res = fpgaDMAOpenChannel(dma_handle, 0, &threads[0].dma_ch);
-	ON_ERR_GOTO(res, free_descs, "fpgaDMAEnumerateChannels");
+	res = fpgaDmaEnumerateChannels(dma_handle, count, descs, &count);
+	ON_ERR_GOTO(res, free_descs, "fpgaDmaEnumerateChannels");
+	res = fpgaDmaOpenChannel(dma_handle, 0, &threads[0].dma_ch);
+	ON_ERR_GOTO(res, free_descs, "fpgaDmaEnumerateChannels");
 
 free_descs:
 	free(descs);
 
 	fpga_dma_handle_t *dma_h = (fpga_dma_handle_t *)dma_handle;
-	res = fpgaDMAQueueInit(dma_h, queue);
+	res = fpgaDmaQueueInit(dma_h, queue);
 	if (FPGA_OK != res) {
 		fprintf(stderr, "QueueInit failure.\n");
 	}
@@ -396,9 +396,9 @@ free_descs:
 		pthread_join(threads[i].thread_id, &ret);
 	}
 
-	fpgaDMAQueueDestroy(dma_h, queue, false);
-	res = fpgaDMACloseChannel(&threads[0].dma_ch);
-	ON_ERR_GOTO(res, free_descs, "fpgaDMAEnumerateChannels");
+	fpgaDmaQueueDestroy(dma_h, queue, false);
+	res = fpgaDmaCloseChannel(&threads[0].dma_ch);
+	ON_ERR_GOTO(res, free_descs, "fpgaDmaEnumerateChannels");
 
 	printf("Queue performance\n\n");
 
@@ -435,8 +435,8 @@ free_descs:
 
 
 dma_close:
-	res = fpgaDMAClose(&dma_handle);
-	ON_ERR_GOTO(res, out_unmap, "fpgaDMAClose");
+	res = fpgaDmaClose(&dma_handle);
+	ON_ERR_GOTO(res, out_unmap, "fpgaDmaClose");
 
 out_unmap:
 #ifndef USE_ASE

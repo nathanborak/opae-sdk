@@ -704,7 +704,7 @@ static inline double getTime(struct timespec start, struct timespec end)
 }
 #endif
 
-static fpga_result fpgaDMATransferSync(m2m_dma_handle_t *dma_h,
+static fpga_result fpgaDmaTransferSync(m2m_dma_handle_t *dma_h,
 				       fpga_dma_transfer_t *m2m_transfer)
 {
 
@@ -778,14 +778,14 @@ void *m2mTransactionWorker(void *dma_handle)
 
 	while (1) {
 		fpga_dma_transfer_t m2m_transfer;
-		res = fpgaDMADequeue(&dma_h->header.transferRequestq,
+		res = fpgaDmaDequeue(&dma_h->header.transferRequestq,
 				     &m2m_transfer);
 		if (res == FPGA_NO_ACCESS) {
 			debug_print("M2M thread termination");
 			break;
 		}
 		if (res != FPGA_OK) {
-			FPGA_DMA_ST_ERR("fpgaDMADequeue failed");
+			FPGA_DMA_ST_ERR("fpgaDmaDequeue failed");
 			return NULL;
 		}
 		debug_print("MM --- src_addr = %08lx, dst_addr = %08lx\n",
@@ -808,17 +808,17 @@ void *m2mTransactionWorker(void *dma_handle)
 			}
 		}
 
-		res = fpgaDMATransferSync(dma_h, &m2m_transfer);
+		res = fpgaDmaTransferSync(dma_h, &m2m_transfer);
 
 		if (res != FPGA_OK) {
-			FPGA_DMA_ST_ERR("fpgaDMATransferSync failed");
+			FPGA_DMA_ST_ERR("fpgaDmaTransferSync failed");
 			return NULL;
 		}
 
-		res = fpgaDMAEnqueue(&dma_h->header.dma_h->transferCompleteq,
+		res = fpgaDmaEnqueue(&dma_h->header.dma_h->transferCompleteq,
 				     &m2m_transfer);
 		if (res != FPGA_OK) {
-			FPGA_DMA_ST_ERR("fpgaDMAEnqueue failed");
+			FPGA_DMA_ST_ERR("fpgaDmaEnqueue failed");
 			return NULL;
 		}
 	}

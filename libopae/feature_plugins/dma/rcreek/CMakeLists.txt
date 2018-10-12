@@ -27,6 +27,10 @@
 set(DMA_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 set(DMA_INCLUDE_INT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include_int)
 
+# Concrete datatypes
+include_directories(${OPAE_INCLUDE_DIR})
+include_directories(${OPAE_SDK_SOURCE}/libopae/plugins/xfpga)
+
 # utils
 add_subdirectory(utils)
 
@@ -34,7 +38,6 @@ add_subdirectory(utils)
 add_subdirectory(unified_dma)
 
 # tests
-add_subdirectory(tests/streaming)
-add_subdirectory(tests/queue)
-add_subdirectory(tests/pool)
-add_subdirectory(tests/lock)
+# add_subdirectory(tests/queue)
+# add_subdirectory(tests/pool)
+# add_subdirectory(tests/streaming)

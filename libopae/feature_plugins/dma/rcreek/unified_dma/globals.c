@@ -37,7 +37,7 @@
 #include "globals.h"
 
 int err_cnt = 0;
-int fpgaDMAIsOpen = 0;
+int fpgaDmaIsOpen = 0;
 
 #ifdef CHECK_DELAYS_MM
 uint64_t buf_full_count = 0;

@@ -152,14 +152,14 @@ void *m2sTransactionWorker(void *dma_handle)
 	while (1) {
 		bool intr_en = false;
 		fpga_dma_transfer_t m2s_transfer;
-		res = fpgaDMADequeue(&dma_h->header.transferRequestq,
+		res = fpgaDmaDequeue(&dma_h->header.transferRequestq,
 				     &m2s_transfer);
 		if (res == FPGA_NO_ACCESS) {
 			// FPGA_DMA_ST_ERR("M2S thread termination");
 			break;
 		}
 		if (res != FPGA_OK) {
-			FPGA_DMA_ST_ERR("fpgaDMADequeue failed");
+			FPGA_DMA_ST_ERR("fpgaDmaDequeue failed");
 			return NULL;
 		}
 		debug_print(
@@ -247,10 +247,10 @@ void *m2sTransactionWorker(void *dma_handle)
 			poll_interrupt(&dma_h->header M2S_TW2);
 		}
 
-		res = fpgaDMAEnqueue(&dma_h->header.dma_h->transferCompleteq,
+		res = fpgaDmaEnqueue(&dma_h->header.dma_h->transferCompleteq,
 				     &m2s_transfer);
 		if (res != FPGA_OK) {
-			FPGA_DMA_ST_ERR("fpgaDMAEnqueue failed");
+			FPGA_DMA_ST_ERR("fpgaDmaEnqueue failed");
 			return NULL;
 		}
 	}

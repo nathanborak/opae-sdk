@@ -117,7 +117,7 @@ int setNUMABindings(fpga_handle fpga_h)
 	return cres;
 }
 
-fpga_result fpgaDMAAllocateAndPinBuffers(fpga_dma_handle_t *dma_h)
+fpga_result fpgaDmaAllocateAndPinBuffers(fpga_dma_handle_t *dma_h)
 {
 	fpga_result res = FPGA_OK;
 	int retval = 0;

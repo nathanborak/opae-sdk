@@ -43,7 +43,7 @@
 #include "fpga_dma_internal.h"
 #include "fpga_dma.h"
 
-inline fpga_result fpgaDMAGetChannelType(fpga_dma_channel_handle _dma,
+inline fpga_result fpgaDmaGetChannelType(fpga_dma_channel_handle _dma,
 					 fpga_dma_channel_type_t *ch_type)
 {
 	fpga_dma_handle_t *dma = (fpga_dma_handle_t *)_dma;
@@ -63,7 +63,7 @@ inline fpga_result fpgaDMAGetChannelType(fpga_dma_channel_handle _dma,
 	return FPGA_OK;
 }
 
-inline fpga_result fpgaDMATransferInit(fpga_dma_channel_handle _dma_h,
+inline fpga_result fpgaDmaTransferInit(fpga_dma_channel_handle _dma_h,
 				       fpga_dma_transfer *transfer)
 {
 	fpga_result res = FPGA_OK;
@@ -117,7 +117,7 @@ inline fpga_result fpgaDMATransferInit(fpga_dma_channel_handle _dma_h,
 	return res;
 }
 
-inline fpga_result fpgaDMATransferReset(fpga_dma_channel_handle dma,
+inline fpga_result fpgaDmaTransferReset(fpga_dma_channel_handle dma,
 					fpga_dma_transfer _transfer)
 {
 	(void)dma;
@@ -153,7 +153,7 @@ inline fpga_result fpgaDMATransferReset(fpga_dma_channel_handle dma,
 	return res;
 }
 
-inline fpga_result fpgaDMATransferDestroy(fpga_dma_channel_handle _dma_h,
+inline fpga_result fpgaDmaTransferDestroy(fpga_dma_channel_handle _dma_h,
 					  fpga_dma_transfer *_transfer)
 {
 	fpga_result res = FPGA_OK;
@@ -214,7 +214,7 @@ inline fpga_result fpgaDMATransferDestroy(fpga_dma_channel_handle _dma_h,
 	return res;
 }
 
-inline fpga_result fpgaDMATransferSetSrc(fpga_dma_transfer _transfer,
+inline fpga_result fpgaDmaTransferSetSrc(fpga_dma_transfer _transfer,
 					 uint64_t src)
 {
 	fpga_result res = FPGA_OK;
@@ -241,7 +241,7 @@ inline fpga_result fpgaDMATransferSetSrc(fpga_dma_transfer _transfer,
 	return res;
 }
 
-inline fpga_result fpgaDMATransferSetDst(fpga_dma_transfer _transfer,
+inline fpga_result fpgaDmaTransferSetDst(fpga_dma_transfer _transfer,
 					 uint64_t dst)
 {
 	fpga_result res = FPGA_OK;
@@ -265,7 +265,7 @@ inline fpga_result fpgaDMATransferSetDst(fpga_dma_transfer _transfer,
 	return res;
 }
 
-inline fpga_result fpgaDMATransferSetLen(fpga_dma_transfer _transfer,
+inline fpga_result fpgaDmaTransferSetLen(fpga_dma_transfer _transfer,
 					 uint64_t len)
 {
 	fpga_result res = FPGA_OK;
@@ -288,7 +288,7 @@ inline fpga_result fpgaDMATransferSetLen(fpga_dma_transfer _transfer,
 	return res;
 }
 
-inline fpga_result fpgaDMATransferSetTransferType(fpga_dma_transfer _transfer,
+inline fpga_result fpgaDmaTransferSetTransferType(fpga_dma_transfer _transfer,
 						  fpga_dma_transfer_type_t type)
 {
 	fpga_result res = FPGA_OK;
@@ -322,7 +322,7 @@ inline fpga_result fpgaDMATransferSetTransferType(fpga_dma_transfer _transfer,
 	return res;
 }
 
-inline fpga_result fpgaDMATransferSetTxControl(fpga_dma_transfer _transfer,
+inline fpga_result fpgaDmaTransferSetTxControl(fpga_dma_transfer _transfer,
 					       fpga_dma_tx_ctrl_t tx_ctrl)
 {
 	fpga_result res = FPGA_OK;
@@ -351,7 +351,7 @@ inline fpga_result fpgaDMATransferSetTxControl(fpga_dma_transfer _transfer,
 	return res;
 }
 
-inline fpga_result fpgaDMATransferSetRxControl(fpga_dma_transfer _transfer,
+inline fpga_result fpgaDmaTransferSetRxControl(fpga_dma_transfer _transfer,
 					       fpga_dma_rx_ctrl_t rx_ctrl)
 {
 	fpga_result res = FPGA_OK;
@@ -381,7 +381,7 @@ inline fpga_result fpgaDMATransferSetRxControl(fpga_dma_transfer _transfer,
 }
 
 inline fpga_result
-fpgaDMATransferSetTransferCallback(fpga_dma_transfer _transfer,
+fpgaDmaTransferSetTransferCallback(fpga_dma_transfer _transfer,
 				   fpga_dma_transfer_cb cb, void *ctxt)
 {
 	fpga_result res = FPGA_OK;
@@ -407,7 +407,7 @@ fpgaDMATransferSetTransferCallback(fpga_dma_transfer _transfer,
 }
 
 inline fpga_result
-fpgaDMATransferGetBytesTransferred(fpga_dma_transfer _transfer,
+fpgaDmaTransferGetBytesTransferred(fpga_dma_transfer _transfer,
 				   size_t *rx_bytes)
 {
 	fpga_dma_transfer_t *transfer = (fpga_dma_transfer_t *)_transfer;
@@ -437,7 +437,7 @@ fpgaDMATransferGetBytesTransferred(fpga_dma_transfer _transfer,
 	return FPGA_OK;
 }
 
-inline fpga_result fpgaDMATransferCheckEopArrived(fpga_dma_transfer _transfer,
+inline fpga_result fpgaDmaTransferCheckEopArrived(fpga_dma_transfer _transfer,
 						  bool *eop_arrived)
 {
 	fpga_dma_transfer_t *transfer = (fpga_dma_transfer_t *)_transfer;
@@ -467,7 +467,7 @@ inline fpga_result fpgaDMATransferCheckEopArrived(fpga_dma_transfer _transfer,
 	return FPGA_OK;
 }
 
-inline fpga_result fpgaDMATransferStart(fpga_dma_channel_handle _dma,
+inline fpga_result fpgaDmaTransferStart(fpga_dma_channel_handle _dma,
 					fpga_dma_transfer _transfer)
 {
 	fpga_result res = FPGA_OK;
@@ -534,17 +534,17 @@ inline fpga_result fpgaDMATransferStart(fpga_dma_channel_handle _dma,
 	do {
 		switch (transfer->ch_type) {
 		case TX_ST:
-			res = fpgaDMAEnqueue(&m2s->header.transferRequestq,
+			res = fpgaDmaEnqueue(&m2s->header.transferRequestq,
 					     transfer);
 			break;
 
 		case RX_ST:
-			res = fpgaDMAEnqueue(&s2m->header.transferRequestq,
+			res = fpgaDmaEnqueue(&s2m->header.transferRequestq,
 					     transfer);
 			break;
 
 		case MM:
-			res = fpgaDMAEnqueue(&m2m->header.transferRequestq,
+			res = fpgaDmaEnqueue(&m2m->header.transferRequestq,
 					     transfer);
 			break;
 
@@ -576,7 +576,7 @@ inline fpga_result fpgaDMATransferStart(fpga_dma_channel_handle _dma,
 	return res;
 }
 
-inline fpga_result fpgaDMATransferInitSmall(fpga_dma_channel_handle _dma,
+inline fpga_result fpgaDmaTransferInitSmall(fpga_dma_channel_handle _dma,
 					    uint64_t *size, void **buf_ptr,
 					    fpga_dma_transfer *transfer)
 {
@@ -610,7 +610,7 @@ inline fpga_result fpgaDMATransferInitSmall(fpga_dma_channel_handle _dma,
 		return FPGA_NO_MEMORY;
 	}
 
-	res = fpgaDMATransferInit(_dma, transfer);
+	res = fpgaDmaTransferInit(_dma, transfer);
 	if (FPGA_OK != res) {
 		FPGA_DMA_ST_ERR("Cannot initialize transfer");
 		return res;

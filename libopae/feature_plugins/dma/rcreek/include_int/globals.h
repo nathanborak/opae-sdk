@@ -36,7 +36,7 @@
 #include <stddef.h>
 
 extern int err_cnt;
-extern int fpgaDMAIsOpen;
+extern int fpgaDmaIsOpen;
 
 //#define CHECK_DELAYS_MM
 

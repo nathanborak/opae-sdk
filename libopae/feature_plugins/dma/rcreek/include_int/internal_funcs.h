@@ -33,28 +33,29 @@
 #define __INTERNAL_FUNCS_H__
 
 #include <opae/fpga.h>
-#include "fpga_dma_types.h"
 #include <stdbool.h>
 #include <pthread.h>
 #include <semaphore.h>
 #include "x86-sse2.h"
+
+#include "opae/dma_types.h"
 #include "fpga_common_internal.h"
 #include "memcpy_internal.h"
 #include "mmio_utils_internal.h"
 #include "common_internal.h"
 
-int fpgaDMA_setup_sig_handler(fpga_dma_handle_t *dma_h);
+int fpgaDma_setup_sig_handler(fpga_dma_handle_t *dma_h);
 
-void fpgaDMA_restore_sig_handler(fpga_dma_handle_t *dma_h);
+void fpgaDma_restore_sig_handler(fpga_dma_handle_t *dma_h);
 
-fpga_result fpgaDMAQueueInit(fpga_dma_handle_t *dma_h, qinfo_t *q);
+fpga_result fpgaDmaQueueInit(fpga_dma_handle_t *dma_h, qinfo_t *q);
 
-fpga_result fpgaDMAQueueDestroy(fpga_dma_handle_t *dma_h, qinfo_t *q,
+fpga_result fpgaDmaQueueDestroy(fpga_dma_handle_t *dma_h, qinfo_t *q,
 				       bool free_only);
 
-fpga_result fpgaDMAEnqueue(qinfo_t *q, fpga_dma_transfer_t *tf);
+fpga_result fpgaDmaEnqueue(qinfo_t *q, fpga_dma_transfer_t *tf);
 
-fpga_result fpgaDMADequeue(qinfo_t *q, fpga_dma_transfer_t *tf);
+fpga_result fpgaDmaDequeue(qinfo_t *q, fpga_dma_transfer_t *tf);
 
 sem_pool_item *getFreeSemaphore(handle_common *comm, int pshared,
 				       int sem_value);
@@ -71,7 +72,7 @@ void destroyAllPoolResources(handle_common *comm, bool free_only);
 // Bind the calling thread to the NUMA node of the device
 int setNUMABindings(fpga_handle fpga_h);
 
-fpga_result fpgaDMAAllocateAndPinBuffers(fpga_dma_handle_t *dma_h);
+fpga_result fpgaDmaAllocateAndPinBuffers(fpga_dma_handle_t *dma_h);
 
 void *m2sTransactionWorker(void *dma_handle);
 

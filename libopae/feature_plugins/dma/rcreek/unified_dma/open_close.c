@@ -41,6 +41,7 @@
 #include <assert.h>
 #include <math.h>
 #include <safe_string/safe_string.h>
+
 #include "fpga_dma_internal.h"
 #include "fpga_dma.h"
 
@@ -128,7 +129,7 @@ out:
 
 // Public APIs
 static fpga_result
-fpgaDMAEnumerateChannelsInt(fpga_handle fpga, uint32_t max_descriptors,
+fpgaDmaEnumerateChannelsInt(fpga_handle fpga, uint32_t max_descriptors,
 			    fpga_dma_channel_desc *descriptors,
 			    uint32_t *num_descriptors,
 			    internal_channel_desc *int_desc)
@@ -222,7 +223,7 @@ out:
 	return res;
 }
 
-inline fpga_result fpgaDMAEnumerateChannels(fpga_dma_handle dma_ch,
+inline fpga_result fpgaDmaEnumerateChannels(fpga_dma_handle dma_ch,
 					    uint32_t max_descriptors,
 					    fpga_dma_channel_desc *descriptors,
 					    uint32_t *num_descriptors)
@@ -232,17 +233,17 @@ inline fpga_result fpgaDMAEnumerateChannels(fpga_dma_handle dma_ch,
 	if (!dma_h || IS_CHANNEL_HANDLE(dma_h)) {
 		return FPGA_INVALID_PARAM;
 	}
-	return fpgaDMAEnumerateChannelsInt(dma_h->header.fpga_h,
+	return fpgaDmaEnumerateChannelsInt(dma_h->header.fpga_h,
 					   max_descriptors, descriptors,
 					   num_descriptors, NULL);
 }
 
-inline fpga_result fpgaDMAOpen(fpga_handle fpga, fpga_dma_handle *dma)
+inline fpga_result fpgaDmaOpen(fpga_handle fpga, fpga_dma_handle *dma)
 {
 	fpga_result res = FPGA_OK;
 	fpga_dma_handle_t *dma_h;
 
-	if (fpgaDMAIsOpen) {
+	if (fpgaDmaIsOpen) {
 		FPGA_DMA_ST_ERR("Attempt to open DMA multiple times");
 		return FPGA_BUSY;
 	}
@@ -281,19 +282,19 @@ inline fpga_result fpgaDMAOpen(fpga_handle fpga, fpga_dma_handle *dma)
 		goto free_dma_h;
 	}
 
-	res = fpgaDMAQueueInit(dma_h, &dma_h->transferCompleteq);
+	res = fpgaDmaQueueInit(dma_h, &dma_h->transferCompleteq);
 	if (res != FPGA_OK) {
-		res = fpgaDMAQueueDestroy(dma_h, &dma_h->transferCompleteq,
+		res = fpgaDmaQueueDestroy(dma_h, &dma_h->transferCompleteq,
 					  false);
 		ON_ERR_GOTO(FPGA_EXCEPTION, free_dma_h,
-			    "fpgaDMAQueueDestroy failed");
+			    "fpgaDmaQueueDestroy failed");
 	}
 
 	uint32_t num_descs;
 
-	res = fpgaDMAEnumerateChannelsInt(dma_h->main_header.fpga_h, 0, NULL,
+	res = fpgaDmaEnumerateChannelsInt(dma_h->main_header.fpga_h, 0, NULL,
 					  &num_descs, NULL);
-	ON_ERR_GOTO(res, rel_buf, "DMA fpgaDMAEnumerateChannelsInt failure");
+	ON_ERR_GOTO(res, rel_buf, "DMA fpgaDmaEnumerateChannelsInt failure");
 	if (num_descs <= 0) {
 		ON_ERR_GOTO(FPGA_NOT_FOUND, free_dma_h, "No descriptors");
 	}
@@ -309,11 +310,11 @@ inline fpga_result fpgaDMAOpen(fpga_handle fpga, fpga_dma_handle *dma)
 	// FIXME: Need some MMIO addresses for enumerate
 	dma_h->main_header.chan_desc = &dma_h->chan_descs[0];
 
-	res = fpgaDMAEnumerateChannelsInt(dma_h->main_header.fpga_h, 0, NULL,
+	res = fpgaDmaEnumerateChannelsInt(dma_h->main_header.fpga_h, 0, NULL,
 					  &num_descs, dma_h->chan_descs);
-	ON_ERR_GOTO(res, rel_buf, "DMA fpgaDMAEnumerateChannelsInt failure");
+	ON_ERR_GOTO(res, rel_buf, "DMA fpgaDmaEnumerateChannelsInt failure");
 
-	if (fpgaDMA_setup_sig_handler(dma_h)) {
+	if (fpgaDma_setup_sig_handler(dma_h)) {
 		ON_ERR_GOTO(FPGA_EXCEPTION, rel_buf,
 			    "Error: failed to register signal handler.\n");
 	}
@@ -347,18 +348,18 @@ inline fpga_result fpgaDMAOpen(fpga_handle fpga, fpga_dma_handle *dma)
 	}
 
 	*dma = dma_h;
-	fpgaDMAIsOpen = 1;
+	fpgaDmaIsOpen = 1;
 
 	return FPGA_OK;
 
 restore_sig_handler:
-	fpgaDMA_restore_sig_handler(dma_h);
+	fpgaDma_restore_sig_handler(dma_h);
 
 rel_buf:
 	free(dma_h->chan_descs);
 
 out:
-	fpgaDMAQueueDestroy(dma_h, &dma_h->transferCompleteq, false);
+	fpgaDmaQueueDestroy(dma_h, &dma_h->transferCompleteq, false);
 
 free_dma_h:
 	free(dma_h);
@@ -366,7 +367,7 @@ free_dma_h:
 	return res;
 }
 
-inline fpga_result fpgaDMAClose(fpga_dma_handle *_dma_h)
+inline fpga_result fpgaDmaClose(fpga_dma_handle *_dma_h)
 {
 	fpga_result res = FPGA_OK;
 	fpga_dma_handle_t *dma_h = (fpga_dma_handle_t *)*_dma_h;
@@ -390,9 +391,9 @@ inline fpga_result fpgaDMAClose(fpga_dma_handle *_dma_h)
 			continue;
 		}
 
-		res = fpgaDMACloseChannel(&dma_h->open_channels[i]);
+		res = fpgaDmaCloseChannel(&dma_h->open_channels[i]);
 		if (FPGA_OK != res) {
-			FPGA_DMA_ST_ERR("fpgaDMAClose: closing channel")
+			FPGA_DMA_ST_ERR("fpgaDmaClose: closing channel")
 		}
 
 		assert(NULL == dma_h->open_channels[i]);
@@ -400,7 +401,7 @@ inline fpga_result fpgaDMAClose(fpga_dma_handle *_dma_h)
 
 	// Terminate the spawned threads by sending a termination transfer
 	kill_transfer.ch_type = INVALID_TYPE;
-	fpgaDMAEnqueue(&dma_h->transferCompleteq, &kill_transfer);
+	fpgaDmaEnqueue(&dma_h->transferCompleteq, &kill_transfer);
 
 	// Wait for the threads to exit
 	void *th_retval;
@@ -412,12 +413,12 @@ inline fpga_result fpgaDMAClose(fpga_dma_handle *_dma_h)
 			"pthread_join for completion queue - bad return value");
 	}
 
-	fpgaDMA_restore_sig_handler(dma_h);
+	fpgaDma_restore_sig_handler(dma_h);
 
-	if (fpgaDMAQueueDestroy(dma_h, &dma_h->transferCompleteq, false)
+	if (fpgaDmaQueueDestroy(dma_h, &dma_h->transferCompleteq, false)
 	    != FPGA_OK) {
 		res = FPGA_EXCEPTION;
-		ON_ERR_GOTO(res, out, "fpgaDMAQueueDestroy");
+		ON_ERR_GOTO(res, out, "fpgaDmaQueueDestroy");
 	}
 
 	destroyAllPoolResources(&dma_h->main_header, false);
@@ -431,7 +432,7 @@ out:
 	return res;
 }
 
-inline fpga_result fpgaDMAOpenChannel(fpga_dma_handle _dma_h,
+inline fpga_result fpgaDmaOpenChannel(fpga_dma_handle _dma_h,
 				      uint64_t dma_channel_index,
 				      fpga_dma_channel_handle *_dma_ch)
 {
@@ -543,11 +544,11 @@ inline fpga_result fpgaDMAOpenChannel(fpga_dma_handle _dma_h,
 	(*comm)->dma_h = dma_hx;
 	(*comm)->dma_channel = dma_channel_index;
 
-	res = fpgaDMAQueueInit(dma_ch, &(*comm)->transferRequestq);
+	res = fpgaDmaQueueInit(dma_ch, &(*comm)->transferRequestq);
 	if (res != FPGA_OK) {
-		res = fpgaDMAQueueDestroy(dma_ch, &(*comm)->transferRequestq,
+		res = fpgaDmaQueueDestroy(dma_ch, &(*comm)->transferRequestq,
 					  false);
-		ON_ERR_GOTO(FPGA_EXCEPTION, out, "fpgaDMAQueueDestroy failed");
+		ON_ERR_GOTO(FPGA_EXCEPTION, out, "fpgaDmaQueueDestroy failed");
 	}
 
 	// register interrupt event handle
@@ -620,7 +621,7 @@ out:
 	return res;
 }
 
-inline fpga_result fpgaDMACloseChannel(fpga_dma_channel_handle *_dma_h)
+inline fpga_result fpgaDmaCloseChannel(fpga_dma_channel_handle *_dma_h)
 {
 	fpga_result res = FPGA_OK;
 	fpga_dma_handle_t *dma_h = (fpga_dma_handle_t *)*_dma_h;
@@ -664,7 +665,7 @@ inline fpga_result fpgaDMACloseChannel(fpga_dma_channel_handle *_dma_h)
 	case TX_ST:
 		// Terminate the spawned threads by sending a termination
 		// transfer
-		fpgaDMAEnqueue(&m2s->header.transferRequestq, &kill_transfer);
+		fpgaDmaEnqueue(&m2s->header.transferRequestq, &kill_transfer);
 
 		if (pthread_join(m2s->header.dma_h->m2s_thread_id,
 				 &th_retval)) {
@@ -676,13 +677,13 @@ inline fpga_result fpgaDMACloseChannel(fpga_dma_channel_handle *_dma_h)
 		}
 		releaseChannelResources(&m2s->header);
 
-		fpgaDMAQueueDestroy(m2s->header.dma_h,
+		fpgaDmaQueueDestroy(m2s->header.dma_h,
 				    &m2s->header.transferRequestq, false);
 		break;
 	case RX_ST:
 		// Terminate the spawned threads by sending a termination
 		// transfer
-		fpgaDMAEnqueue(&s2m->header.transferRequestq, &kill_transfer);
+		fpgaDmaEnqueue(&s2m->header.transferRequestq, &kill_transfer);
 
 		if (pthread_join(s2m->header.dma_h->s2m_thread_id,
 				 &th_retval)) {
@@ -694,13 +695,13 @@ inline fpga_result fpgaDMACloseChannel(fpga_dma_channel_handle *_dma_h)
 		}
 		releaseChannelResources(&s2m->header);
 
-		fpgaDMAQueueDestroy(s2m->header.dma_h,
+		fpgaDmaQueueDestroy(s2m->header.dma_h,
 				    &s2m->header.transferRequestq, false);
 		break;
 	case MM:
 		// Terminate the spawned threads by sending a termination
 		// transfer
-		fpgaDMAEnqueue(&m2m->header.transferRequestq, &kill_transfer);
+		fpgaDmaEnqueue(&m2m->header.transferRequestq, &kill_transfer);
 
 		if (pthread_join(m2m->header.dma_h->m2m_thread_id,
 				 &th_retval)) {
@@ -714,7 +715,7 @@ inline fpga_result fpgaDMACloseChannel(fpga_dma_channel_handle *_dma_h)
 		res = fpgaReleaseBuffer(m2m->header.fpga_h, m2m->magic_wsid);
 		ON_ERR_GOTO(res, out, "fpgaReleaseBuffer");
 
-		fpgaDMAQueueDestroy(m2m->header.dma_h,
+		fpgaDmaQueueDestroy(m2m->header.dma_h,
 				    &m2m->header.transferRequestq, false);
 
 		releaseChannelResources(&m2m->header);

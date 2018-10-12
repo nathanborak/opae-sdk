@@ -33,12 +33,14 @@
 #define __FPGA_COMMON_INT_H__
 
 #include <opae/fpga.h>
-#include "fpga_dma_types.h"
 #include <stdbool.h>
 #include <pthread.h>
 #include <semaphore.h>
 #include <signal.h>
 #include "x86-sse2.h"
+
+#include "dma_types_int.h"
+#include "fpga_dma_types.h"
 
 #ifdef CHECK_DELAYS
 #pragma message "Compiled with -DCHECK_DELAYS.  Not to be used in production"
@@ -205,87 +207,6 @@
 // Max. async transfers in progress
 #define FPGA_DMA_MAX_INFLIGHT_TRANSACTIONS 100000
 #define INVALID_CHANNEL (0x7fffffffffffffffULL)
-
-typedef enum _pool_type {
-	POOL_INVALID = 0,
-	POOL_SEMA,
-	POOL_MUTEX,
-	POOL_BUFFERS,
-} pool_type;
-
-typedef struct _pool_hdr {
-	pool_type type;
-	uint32_t destroyed;
-} pool_header;
-
-// Semaphore / mutex pool
-typedef struct _sem_pool {
-	struct _sem_pool *next;
-	pool_header header;
-	sem_t m_semaphore;
-} sem_pool_item;
-
-typedef struct _mutex_pool {
-	struct _mutex_pool *next;
-	pool_header header;
-	pthread_mutex_t m_mutex;
-} mutex_pool_item;
-
-typedef struct _buffer_pool {
-	struct _buffer_pool *next;
-	pool_header header;
-	uint64_t size;
-	uint64_t *dma_buf_ptr;
-	uint64_t dma_buf_wsid;
-	uint64_t dma_buf_iova;
-} buffer_pool_item;
-
-// Channel status
-typedef enum {
-	TRANSFER_IN_PROGRESS = 0,
-	TRANSFER_NOT_IN_PROGRESS = 1
-} fpga_transf_status_t;
-
-typedef struct _fpga_dma_transfer {
-	sem_pool_item *tf_semaphore;
-	mutex_pool_item *tf_mutex;
-	fpga_dma_channel_type_t ch_type;
-	uint64_t src;
-	uint64_t dst;
-	uint64_t len;
-	fpga_dma_transfer_type_t transfer_type;
-	fpga_dma_tx_ctrl_t tx_ctrl;
-	fpga_dma_rx_ctrl_t rx_ctrl;
-	fpga_dma_transfer_cb cb;
-	bool eop_status;
-	void *context;
-	size_t rx_bytes;
-	uint32_t num_buffers;
-	buffer_pool_item **buffers;
-	buffer_pool_item *small_buffer;
-} fpga_dma_transfer_t;
-
-#pragma pack(push, 1)
-typedef struct {
-	uint64_t dfh;
-	uint64_t feature_uuid_lo;
-	uint64_t feature_uuid_hi;
-} dfh_feature_t;
-#pragma pack(pop)
-
-typedef union {
-	uint64_t reg;
-	struct {
-		uint64_t feature_type : 4;
-		uint64_t reserved_8 : 8;
-		uint64_t afu_minor : 4;
-		uint64_t reserved_7 : 7;
-		uint64_t end_dfh : 1;
-		uint64_t next_dfh : 24;
-		uint64_t afu_major : 4;
-		uint64_t feature_id : 12;
-	} bits;
-} dfh_reg_t;
 
 typedef struct qinfo {
 	int read_index;

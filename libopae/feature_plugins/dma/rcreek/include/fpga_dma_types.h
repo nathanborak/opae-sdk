@@ -33,26 +33,4 @@
 #ifndef __FPGA_DMA_TYPES_H__
 #define __FPGA_DMA_TYPES_H__
 
-#include <opae/fpga.h>
-#include <stdbool.h>
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-typedef struct _fpga_dma_channel_desc {
-	uint32_t index;
-	fpga_dma_channel_type_t ch_type;
-} fpga_dma_channel_desc;
-
-// Opaque object that describes DMA
-typedef void *fpga_dma_handle;
-
-// Opaque object that describes DMA channel
-typedef void *fpga_dma_channel_handle;
-
-
-#ifdef __cplusplus
-}
-#endif
-
 #endif // __FPGA_DMA_TYPES_H__

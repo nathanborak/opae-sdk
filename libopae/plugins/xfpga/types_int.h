@@ -35,12 +35,9 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <pthread.h>
 #include <opae/types.h>
 #include <opae/sysobject.h>
 #include <opae/types_enum.h>
-
-#include "thpool.h"
 
 #define SYSFS_PATH_MAX 256
 #define SYSFS_FPGA_CLASS_PATH "/sys/class/fpga"
@@ -182,11 +179,13 @@ struct _fpga_object {
 	fpga_object *objects;
 };
 
-typedef struct __attribute__ ((__packed__)) {
+#pragma pack(push, 1)
+typedef struct {
 	uint64_t dfh;
 	uint64_t feature_uuid_lo;
 	uint64_t feature_uuid_hi;
 } dfh_feature_t;
+#pragma pack(pop)
 
 typedef union {
 	uint64_t reg;
@@ -224,99 +223,6 @@ struct _fpga_feature_handle {
 	uint64_t feature_offset;
 	fpga_sub_feature feature_data;
 	fpga_event_handle *eh_root;
-};
-
-// Data structures from DMA MM implementation
-typedef union {
-	uint32_t reg;
-	struct {
-		uint32_t tx_channel:8;
-		uint32_t generate_sop:1;
-		uint32_t generate_eop:1;
-		uint32_t park_reads:1;
-		uint32_t park_writes:1;
-		uint32_t end_on_eop:1;
-		uint32_t eop_rvcd_irq_en:1;
-		uint32_t transfer_irq_en:1;
-		uint32_t early_term_irq_en:1;
-		uint32_t trans_error_irq_en:8;
-		uint32_t early_done_en:1;
-		uint32_t wait_for_wr_rsp:1;
-		uint32_t reserved_2:5;
-		uint32_t go:1;
-	};
-} _fpga_dma_desc_ctrl_t;
-
-typedef struct __attribute__((__packed__)) _fpga_dma_desc {
-	//0x0
-	uint32_t rd_address;
-	//0x4
-	uint32_t wr_address;
-	//0x8
-	uint32_t len;
-	//0xC
-	uint16_t seq_num;
-	uint8_t rd_burst_count;
-	uint8_t wr_burst_count;
-	//0x10
-	uint16_t rd_stride;
-	uint16_t wr_stride;
-	//0x14
-	uint32_t rd_address_ext;
-	//0x18
-	uint32_t wr_address_ext;
-	//0x1c
-	_fpga_dma_desc_ctrl_t control;
-} _fpga_dma_desc;
-
-/* Queue dispatching transfers to the hardware */
-typedef struct fpga_dma_transfer_q {
-	int read_index;
-	int write_index;
-	fpga_dma_transfer *queue; // Transfers queue
-	sem_t entries; // Counting semaphore, count represents available entries in queue
-	pthread_mutex_t qmutex; // Gain exclusive access before queue operations
-} fpga_dma_transfer_q;
-
-#define DMA_BUFFER_POOL_SIZE 8
-
-/* DMA specific sub-feature information which it is stored in the handle */
-struct _fpga_dma_sub_feature {
-	// Channel type
-	fpga_dma_channel_type_t ch_type;
-	uint64_t ch_number;
-
-	// DMA channel information
-	uint64_t cpu_affinity;
-	uint64_t ring_size;
-
-	// CSR layout
-	uint64_t dma_csr_base;
-	uint64_t dma_desc_base;
-	uint64_t dma_rsp_base;
-	uint64_t dma_streaming_valve_base;
-
-	// Address span extender
-	uint64_t dma_ase_cntl_base;
-	uint64_t dma_ase_data_base;
-
-	// Channel-local threadpool and master
-	threadpool thpool;
-	pthread_t thread_id;
-
-	// Channel-local pinned buffers
-	fpga_dma_buffer buffer_pool[DMA_BUFFER_POOL_SIZE];
-
-	// Channel-local queue of transfers
-	fpga_dma_transfer_q dma_transfer_queue;
-
-	// Channel-local index of the next available transfer in the dispatcher queue
-	uint64_t next_avail_transfer_idx;
-
-	// Channel-local total number of unused transfer in the dispatcher queue of transfers
-	// Note: Count includes the next available transfer in
-	// the dispatcher queue indexed by next_avail_transfer_idx
-	uint64_t unused_transfer_count;
 };
 
 #ifdef __cplusplus

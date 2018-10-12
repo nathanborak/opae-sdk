@@ -32,14 +32,15 @@ include_directories(${OPAE_INCLUDE_DIR}
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -flto")
 
 add_library(fpga_dma_lib SHARED
-            fpga_dma_st.c
             open_close.c
-            m2s.c
-            m2m.c
-            s2m.c
-            TransactionCompleteWorker.c
-            globals.c
-            signal_handler.c)
+            # m2s.c
+            # m2m.c
+            # s2m.c
+            # fpga_dma_st.c
+            # TransactionCompleteWorker.c
+            # globals.c
+            # signal_handler.c
+	    )
 
 set_install_rpath(fpga_dma_lib)
 

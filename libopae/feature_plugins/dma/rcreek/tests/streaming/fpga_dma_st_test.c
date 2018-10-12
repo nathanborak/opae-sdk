@@ -80,14 +80,14 @@ int sendrxTransfer(fpga_dma_channel_handle dma_h, fpga_dma_transfer rx_transfer,
 {
 	fpga_result res = FPGA_OK;
 	if (attr_reset)
-		fpgaDMATransferReset(dma_h, rx_transfer);
-	fpgaDMATransferSetSrc(rx_transfer, src);
-	fpgaDMATransferSetDst(rx_transfer, dst);
-	fpgaDMATransferSetLen(rx_transfer, tf_len);
-	fpgaDMATransferSetTransferType(rx_transfer, tf_type);
-	fpgaDMATransferSetRxControl(rx_transfer, rx_ctrl);
-	fpgaDMATransferSetTransferCallback(rx_transfer, cb, NULL);
-	res = fpgaDMATransferStart(dma_h, rx_transfer);
+		fpgaDmaTransferReset(dma_h, rx_transfer);
+	fpgaDmaTransferSetSrc(rx_transfer, src);
+	fpgaDmaTransferSetDst(rx_transfer, dst);
+	fpgaDmaTransferSetLen(rx_transfer, tf_len);
+	fpgaDmaTransferSetTransferType(rx_transfer, tf_type);
+	fpgaDmaTransferSetRxControl(rx_transfer, rx_ctrl);
+	fpgaDmaTransferSetTransferCallback(rx_transfer, cb, NULL);
+	res = fpgaDmaTransferStart(dma_h, rx_transfer);
 	return res;
 }
 
@@ -98,14 +98,14 @@ int sendtxTransfer(fpga_dma_channel_handle dma_h, fpga_dma_transfer tx_transfer,
 {
 	fpga_result res = FPGA_OK;
 	if (attr_reset)
-		fpgaDMATransferReset(dma_h, tx_transfer);
-	fpgaDMATransferSetSrc(tx_transfer, src);
-	fpgaDMATransferSetDst(tx_transfer, dst);
-	fpgaDMATransferSetLen(tx_transfer, tf_len);
-	fpgaDMATransferSetTransferType(tx_transfer, tf_type);
-	fpgaDMATransferSetTxControl(tx_transfer, tx_ctrl);
-	fpgaDMATransferSetTransferCallback(tx_transfer, cb, NULL);
-	res = fpgaDMATransferStart(dma_h, tx_transfer);
+		fpgaDmaTransferReset(dma_h, tx_transfer);
+	fpgaDmaTransferSetSrc(tx_transfer, src);
+	fpgaDmaTransferSetDst(tx_transfer, dst);
+	fpgaDmaTransferSetLen(tx_transfer, tf_len);
+	fpgaDmaTransferSetTransferType(tx_transfer, tf_type);
+	fpgaDmaTransferSetTxControl(tx_transfer, tx_ctrl);
+	fpgaDmaTransferSetTransferCallback(tx_transfer, cb, NULL);
+	res = fpgaDmaTransferStart(dma_h, tx_transfer);
 	return res;
 }
 
@@ -214,9 +214,9 @@ fpga_result run_bw_test(fpga_handle afc_h, fpga_dma_channel_handle dma_m2s_h,
 	fill_buffer((uint8_t *)dma_tx_buf_ptr, total_mem_size);
 
 	fpga_dma_transfer rx_transfer = NULL;
-	fpgaDMATransferInit(dma_s2m_h, &rx_transfer);
+	fpgaDmaTransferInit(dma_s2m_h, &rx_transfer);
 	fpga_dma_transfer tx_transfer = NULL;
-	fpgaDMATransferInit(dma_m2s_h, &tx_transfer);
+	fpgaDmaTransferInit(dma_m2s_h, &tx_transfer);
 
 	printf("Streaming from host memory to FPGA..\n");
 	res = populate_pattern_checker(afc_h);
@@ -285,9 +285,9 @@ out:
 	if (dma_rx_buf_ptr)
 		free(dma_rx_buf_ptr);
 	if (rx_transfer)
-		fpgaDMATransferDestroy(dma_s2m_h, &rx_transfer);
+		fpgaDmaTransferDestroy(dma_s2m_h, &rx_transfer);
 	if (tx_transfer)
-		fpgaDMATransferDestroy(dma_m2s_h, &tx_transfer);
+		fpgaDmaTransferDestroy(dma_m2s_h, &tx_transfer);
 
 	return FPGA_OK;
 }
@@ -433,12 +433,12 @@ int main(int argc, char *argv[])
 	res = fpgaReset(afc_h);
 	ON_ERR_GOTO(res, out_unmap, "fpgaReset");
 
-	res = fpgaDMAOpen(afc_h, &dma_handle);
-	ON_ERR_GOTO(res, out_unmap, "fpgaDMAOpen");
+	res = fpgaDmaOpen(afc_h, &dma_handle);
+	ON_ERR_GOTO(res, out_unmap, "fpgaDmaOpen");
 
 	// Enumerate DMA handles
-	res = fpgaDMAEnumerateChannels(dma_handle, 0, NULL, &count);
-	ON_ERR_GOTO(res, dma_close, "fpgaDMAEnumerateChannels");
+	res = fpgaDmaEnumerateChannels(dma_handle, 0, NULL, &count);
+	ON_ERR_GOTO(res, dma_close, "fpgaDmaEnumerateChannels");
 
 	if (count < 1) {
 		printf("Error: DMA channels not found\n");
@@ -448,8 +448,8 @@ int main(int argc, char *argv[])
 
 	fpga_dma_channel_desc *descs = (fpga_dma_channel_desc *)malloc(
 		sizeof(fpga_dma_channel_desc) * count);
-	res = fpgaDMAEnumerateChannels(dma_handle, count, descs, &count);
-	ON_ERR_GOTO(res, free_descs, "fpgaDMAEnumerateChannels");
+	res = fpgaDmaEnumerateChannels(dma_handle, count, descs, &count);
+	ON_ERR_GOTO(res, free_descs, "fpgaDmaEnumerateChannels");
 
 	fpga_dma_channel_handle *dma_h;
 
@@ -483,13 +483,13 @@ int main(int argc, char *argv[])
 
 	assert(!((tx_index == 0xffffffff) || (rx_index == 0xffffffff)));
 
-	res = fpgaDMAOpenChannel(dma_handle, tx_index,
+	res = fpgaDmaOpenChannel(dma_handle, tx_index,
 				 &dma_h[tx_index]); // TX handle
-	ON_ERR_GOTO(res, free_descs, "fpgaDMAOpen");
+	ON_ERR_GOTO(res, free_descs, "fpgaDmaOpen");
 
-	res = fpgaDMAOpenChannel(dma_handle, rx_index,
+	res = fpgaDmaOpenChannel(dma_handle, rx_index,
 				 &dma_h[rx_index]); // RX handle
-	ON_ERR_GOTO(res, free_descs, "fpgaDMAOpen");
+	ON_ERR_GOTO(res, free_descs, "fpgaDmaOpen");
 
 	dma_tx_buf_ptr = (uint64_t *)malloc(transfer_len);
 	dma_rx_buf_ptr = (uint64_t *)malloc(transfer_len);
@@ -500,9 +500,9 @@ int main(int argc, char *argv[])
 
 	// Example DMA transfer (host to fpga, asynchronous)
 	fpga_dma_transfer rx_transfer = NULL;
-	fpgaDMATransferInit(dma_h[rx_index], &rx_transfer);
+	fpgaDmaTransferInit(dma_h[rx_index], &rx_transfer);
 	fpga_dma_transfer tx_transfer = NULL;
-	fpgaDMATransferInit(dma_h[tx_index], &tx_transfer);
+	fpgaDmaTransferInit(dma_h[tx_index], &tx_transfer);
 
 	fill_buffer((uint8_t *)dma_tx_buf_ptr, transfer_len);
 
@@ -569,8 +569,8 @@ int main(int argc, char *argv[])
 
 	sem_wait(&rx_cb_status);
 
-	res = fpgaDMATransferGetBytesTransferred(rx_transfer, &bytes_rcvd);
-	ON_ERR_GOTO(res, out_dma_close, "fpgaDMATransferGetBytesTransferred");
+	res = fpgaDmaTransferGetBytesTransferred(rx_transfer, &bytes_rcvd);
+	ON_ERR_GOTO(res, out_dma_close, "fpgaDmaTransferGetBytesTransferred");
 
 	verify_buffer((uint8_t *)dma_rx_buf_ptr, bytes_rcvd);
 	clear_buffer((uint32_t *)dma_rx_buf_ptr, bytes_rcvd);
@@ -597,19 +597,19 @@ int main(int argc, char *argv[])
 	ON_ERR_GOTO(res, out_dma_close, "wait_for_generator_complete");
 
 	sem_wait(&rx_cb_status);
-	res = fpgaDMATransferGetBytesTransferred(rx_transfer, &bytes_rcvd);
-	ON_ERR_GOTO(res, out_dma_close, "fpgaDMATransferGetBytesTransferred");
+	res = fpgaDmaTransferGetBytesTransferred(rx_transfer, &bytes_rcvd);
+	ON_ERR_GOTO(res, out_dma_close, "fpgaDmaTransferGetBytesTransferred");
 
-	res = fpgaDMATransferCheckEopArrived(rx_transfer, &eop_arrived);
-	ON_ERR_GOTO(res, out_dma_close, "fpgaDMATransferGetCheckEopArrived");
+	res = fpgaDmaTransferCheckEopArrived(rx_transfer, &eop_arrived);
+	ON_ERR_GOTO(res, out_dma_close, "fpgaDmaTransferGetCheckEopArrived");
 
 	if (eop_arrived) {
 		verify_buffer((uint8_t *)dma_rx_buf_ptr, bytes_rcvd);
 		clear_buffer((uint32_t *)dma_rx_buf_ptr, bytes_rcvd);
 	}
 
-	fpgaDMATransferDestroy(dma_h[rx_index], &rx_transfer);
-	fpgaDMATransferDestroy(dma_h[tx_index], &tx_transfer);
+	fpgaDmaTransferDestroy(dma_h[rx_index], &rx_transfer);
+	fpgaDmaTransferDestroy(dma_h[tx_index], &tx_transfer);
 
 #ifndef USE_ASE
 	printf("Running Bandwidth Tests..\n");
@@ -622,8 +622,8 @@ out_dma_close:
 	free(dma_rx_buf_ptr);
 	for (i = 0; i < (int)count; i++) {
 		if (dma_h[i]) {
-			res = fpgaDMACloseChannel(&dma_h[i]);
-			ON_ERR_GOTO(res, out_unmap, "fpgaDMACloseChannel");
+			res = fpgaDmaCloseChannel(&dma_h[i]);
+			ON_ERR_GOTO(res, out_unmap, "fpgaDmaCloseChannel");
 		}
 	}
 	free(dma_h);
@@ -632,8 +632,8 @@ free_descs:
 	free(descs);
 
 dma_close:
-	res = fpgaDMAClose(&dma_handle);
-	ON_ERR_GOTO(res, out_unmap, "fpgaDMAClose");
+	res = fpgaDmaClose(&dma_handle);
+	ON_ERR_GOTO(res, out_unmap, "fpgaDmaClose");
 
 out_unmap:
 #ifndef USE_ASE

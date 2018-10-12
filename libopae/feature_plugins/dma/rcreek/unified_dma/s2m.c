@@ -213,14 +213,14 @@ void *s2mTransactionWorker(void *dma_handle)
 		uint64_t tail = 0;
 
 		fpga_dma_transfer_t s2m_transfer;
-		res = fpgaDMADequeue(&dma_h->header.transferRequestq,
+		res = fpgaDmaDequeue(&dma_h->header.transferRequestq,
 				     &s2m_transfer);
 		if (res == FPGA_NO_ACCESS) {
 			debug_print("S2M thread termination");
 			break;
 		}
 		if (res != FPGA_OK) {
-			FPGA_DMA_ST_ERR("fpgaDMADequeue failed");
+			FPGA_DMA_ST_ERR("fpgaDmaDequeue failed");
 			return NULL;
 		}
 		debug_print(
@@ -475,10 +475,10 @@ void *s2mTransactionWorker(void *dma_handle)
 			s2m_transfer.eop_status = 1;
 		}
 
-		res = fpgaDMAEnqueue(&dma_h->header.dma_h->transferCompleteq,
+		res = fpgaDmaEnqueue(&dma_h->header.dma_h->transferCompleteq,
 				     &s2m_transfer);
 		if (res != FPGA_OK) {
-			FPGA_DMA_ST_ERR("fpgaDMAEnqueue failed");
+			FPGA_DMA_ST_ERR("fpgaDmaEnqueue failed");
 			return NULL;
 		}
 	}

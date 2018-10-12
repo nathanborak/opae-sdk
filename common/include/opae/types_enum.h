@@ -152,47 +152,4 @@ enum fpga_object_read_flags {
   FPGA_OBJECT_RECURSE_ALL = (1u << 4) /**< Create subobjects all levels from from containers */
 };
 
-/**
- * fpga dma transfer typeSemantic version
- *
- * Indicate the required transfer type.
- * For streaming: host to AFU, AFU to host, FPGA local mem to AFU, AFU to FPGA local mem
- * memory to memory: host to fpga, fpga to host, fpga internal  memory copy
- */
-typedef enum {
-    HOST_MM_TO_FPGA_ST = 0, // sreaming, host to AFU
-    FPGA_ST_TO_HOST_MM,     // streaming, AFU to host
-    FPGA_MM_TO_FPGA_ST,     // streaming, FPGA local mem to AFU
-    FPGA_ST_TO_FPGA_MM,     // streaming, AFU to FPGA local mem
-    HOST_TO_FPGA_MM,    // Memory mapped FPGA interface
-    FPGA_TO_HOST_MM,    // Memory mapped FPGA interface
-    FPGA_TO_FPGA_MM,    // Memory mapped FPGA interface
-    FPGA_MAX_TRANSFER_TYPE,
-    TERMINATE_THREAD
-} fpga_dma_transfer_type_t;
-
-// TX control values
-typedef enum {
-	TX_NO_PACKET = 0, // deterministic length transfer
-	GENERATE_SOP,
-	GENERATE_EOP,
-	GENERATE_SOP_AND_EOP,
-	FPGA_MAX_TX_CTRL
-} fpga_dma_tx_ctrl_t;
-
-// RX control values
-typedef enum {
-	RX_NO_PACKET = 0, // deterministic length transfer
-	END_ON_EOP,
-	FPGA_MAX_RX_CTRL
-} fpga_dma_rx_ctrl_t;
-
-// Channel types
-typedef enum {
-	INVALID_TYPE = 0,
-	TX_ST,
-	RX_ST,
-	MM,
-} fpga_dma_channel_type_t;
-
 #endif // __FPGA_TYPES_ENUM_H__
