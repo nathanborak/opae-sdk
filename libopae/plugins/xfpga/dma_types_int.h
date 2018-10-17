@@ -24,22 +24,61 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,  EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#include <stdbool.h>
-#include <stddef.h>
-#include <stdint.h>
-#include <pthread.h>
-#include <signal.h>
-
 #include <opae/types.h>
 #include <opae/sysobject.h>
 #include <opae/types_enum.h>
 #include <opae/dma_types.h>
 
-#define DMA_BUFFER_POOL_SIZE 8
-#define FPGA_DMA_MAX_INFLIGHT_TRANSACTIONS 100000
-
 #ifndef DMA_TYPES_INT_H
 #define DMA_TYPES_INT_H
+
+#define DMA_BUFFER_POOL_SIZE 8
+#define FPGA_DMA_MAX_INFLIGHT_TRANSACTIONS 100000
+#define FPGA_DMA_MAX_SMALL_BUFFERS 4
+
+typedef enum _pool_type {
+	POOL_INVALID = 0,
+	POOL_SEMA,
+	POOL_MUTEX,
+	POOL_BUFFERS,
+	POOL_THREADS,
+} pool_type;
+
+typedef struct _pool_hdr {
+	pool_type type;
+	uint32_t destroyed;
+} pool_header;
+
+/* Pinned buffers pool */
+typedef struct _buffer_pool {
+	struct _buffer_pool *next;
+	pool_header header;
+	uint64_t size;
+	uint64_t *dma_buf_ptr;
+	uint64_t dma_buf_wsid;
+	uint64_t dma_buf_iova;
+} buffer_pool_item;
+
+/* Semaphore pool */
+typedef struct _sem_pool {
+	struct _sem_pool *next;
+	pool_header header;
+	sem_t m_semaphore;
+} sem_pool_item;
+
+/* Mutex pool */
+typedef struct _mutex_pool {
+	struct _mutex_pool *next;
+	pool_header header;
+	pthread_mutex_t m_mutex;
+} mutex_pool_item;
+
+/* Thread pool */
+typedef struct _thread_pool {
+	struct _mutex_pool *next;
+	pool_header header;
+	pthread_mutex_t m_mutex;
+} thread_pool_item;
 
 /* Data structures from DMA MM implementation */
 typedef union {
@@ -63,26 +102,31 @@ typedef union {
 } _fpga_dma_desc_ctrl_t;
 
 /* The fpga_dma_desc encapsulateds all information about the descriptors */
-typedef struct __attribute__((__packed__)) _fpga_dma_desc {
-	//0x0
-	uint32_t rd_address;
-	//0x4
-	uint32_t wr_address;
-	//0x8
-	uint32_t len;
-	//0xC
-	uint16_t seq_num;
-	uint8_t rd_burst_count;
-	uint8_t wr_burst_count;
-	//0x10
-	uint16_t rd_stride;
-	uint16_t wr_stride;
-	//0x14
-	uint32_t rd_address_ext;
-	//0x18
-	uint32_t wr_address_ext;
-	//0x1c
-	_fpga_dma_desc_ctrl_t control;
+typedef union {
+	uint64_t reg;
+
+	// Older DMA descriptor format
+	struct __attribute__((__packed__)) {
+		//0x0
+		uint32_t rd_address;
+		//0x4
+		uint32_t wr_address;
+		//0x8
+		uint32_t len;
+		//0xC
+		uint16_t seq_num;
+		uint8_t rd_burst_count;
+		uint8_t wr_burst_count;
+		//0x10
+		uint16_t rd_stride;
+		uint16_t wr_stride;
+		//0x14
+		uint32_t rd_address_ext;
+		//0x18
+		uint32_t wr_address_ext;
+		//0x1c
+		_fpga_dma_desc_ctrl_t control;
+	};
 } _fpga_dma_desc;
 
 // The `fpga_dma_transfer` objects encapsulate all the information about an transfer
@@ -99,7 +143,7 @@ typedef struct _fpga_dma_transfer {
 	fpga_dma_rx_ctrl_t rx_ctrl;
 
 	// Transfer callback and fd (fd used when cb is null)
-	fpga_dma_transfer_cb cb;
+	fpga_dma_async_tx_cb cb;
 	int fd;
 	void *context;
 
@@ -194,7 +238,7 @@ typedef struct qinfo {
 } qinfo_t;
 
 typedef struct _internal_channel_desc {
-	fpga_dma_channel_desc desc;
+	fpga_dma_channel desc;
 	uint32_t mmio_num;
 	uint64_t mmio_offset;
 	uint64_t mmio_va;
@@ -256,7 +300,6 @@ typedef struct _fpga_dma_handle {
 	struct sigaction old_action;
 	volatile uint32_t *CsrControl;
 
-#define FPGA_DMA_MAX_SMALL_BUFFERS 4
 	uint32_t num_smalls;
 } fpga_dma_handle_t;
 
@@ -292,5 +335,34 @@ typedef struct _m2m_dma_handle {
 	uint64_t magic_iova;
 	uint64_t magic_wsid;
 } m2m_dma_handle_t;
+
+static inline fpga_result dmaengine_prep_slave_single(fpga_dma_channel_handle chan,
+						      fpga_dma_async_transfer *tx,
+						      uint64_t flags)
+{
+	// struct scatterlist sg;
+	// sg_init_table(&sg, 1);
+	// sg_dma_address(&sg) = buf;
+	// sg_dma_len(&sg) = len;
+
+	// if (!chan || !chan->device || !chan->device->device_prep_slave_sg)
+	// 	return NULL;
+
+	// return chan->device->device_prep_slave_sg(chan, &sg, 1,
+	// 					  dir, flags, NULL);
+}
+
+static inline fpga_result dmaengine_prep_slave_sg(fpga_dma_channel_handle chan,
+						  fpga_dma_async_transfer *tx,
+						  struct scatterlist *sgl,
+						  uint64_t sg_len,
+						  uint64_t flags)
+{
+	// if (!chan || !chan->device || !chan->device->device_prep_slave_sg)
+	// 	return NULL;
+
+	// return chan->device->device_prep_slave_sg(chan, sgl, sg_len,
+	// 					  dir, flags, NULL);
+}
 
 #endif
