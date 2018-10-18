@@ -30,13 +30,13 @@
  *
  */
 
-#ifndef __DMA_H__
-#define __DMA_H__
-
-#include <opae/types.h>
 #include <opae/types_enum.h>
+#include <opae/types.h>
 #include <opae/dma_types.h>
 #include <opae/feature.h>
+
+#ifndef __FPGA_DMA_H__
+#define __FPGA_DMA_H__
 
 #ifdef __cplusplus
 extern "C" {
@@ -471,4 +471,4 @@ fpga_result fpgaDmaTransferInitSmall(fpga_dma_channel_handle dma,
 } // extern "C"
 #endif // __cplusplus
 
-#endif // __DMA_H__
+#endif // __FPGA_DMA_H__

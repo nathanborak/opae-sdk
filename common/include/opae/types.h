@@ -67,14 +67,16 @@
 #define _GNU_SOURCE
 #endif
 
+#ifndef __USE_XOPEN2K
+#define __USE_XOPEN2K
+#endif
+
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
-#include <pthread.h>
 
 #include <opae/types_enum.h>
-
 #undef _GNU_SOURCE
 
 /**
