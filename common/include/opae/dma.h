@@ -41,7 +41,6 @@
 extern "C" {
 #endif
 
-
 fpga_result fpgaDmaOpen(fpga_handle fpga,
 			fpga_dma_handle *dma);
 
@@ -100,7 +99,7 @@ fpga_result fpgaDmaTransferPoll(fpga_dma_handle dma_handle, fpga_dma_transfer dm
  */
 fpga_result fpgaDmaTransferCB(fpga_dma_handle dma,
 			      fpga_dma_transfer dma_xfer,
-			      fpga_dma_transfer_cb cb,
+			      fpga_dma_async_tx_cb cb,
 			      void *context);
 
 /**
@@ -154,7 +153,7 @@ fpga_result fpgaDmaPostBuffer(fpga_dma_handle dma,
 /* clang-format on */
 fpga_result fpgaDmaEnumerateChannels(fpga_dma_handle dma_ch,
 				     uint32_t max_descriptors,
-				     fpga_dma_channel_desc *descriptors,
+				     fpga_dma_channel *descriptors,
 				     uint32_t *num_descriptors);
 
 /**
@@ -375,7 +374,8 @@ fpga_result fpgaDmaTransferSetRxControl(fpga_dma_transfer transfer,
  * @returns                FPGA_OK on success, return code otherwise
  */
 fpga_result fpgaDmaTransferSetTransferCallback(fpga_dma_transfer transfer,
-					       fpga_dma_transfer_cb cb, void *ctxt);
+					       fpga_dma_async_tx_cb cb,
+					       void *ctxt);
 
 /**
  * fpgaDmaTransferGetBytesTransferred
@@ -462,7 +462,8 @@ fpga_result fpgaDmaTransferStart(fpga_dma_channel_handle dma,
  * @returns                FPGA_OK on success, return code otherwise
  */
 fpga_result fpgaDmaTransferInitSmall(fpga_dma_channel_handle dma,
-				     uint64_t *size, void **buf_ptr,
+				     uint64_t *size,
+				     void **buf_ptr,
 				     fpga_dma_transfer *transfer);
 
 #ifdef __cplusplus

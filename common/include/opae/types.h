@@ -63,12 +63,18 @@
 #ifndef __FPGA_TYPES_H__
 #define __FPGA_TYPES_H__
 
+#ifndef _GNU_SOURCE
+#define _GNU_SOURCE
+#endif
+
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <pthread.h>
-#include <semaphore.h>
+#include <stdio.h>
+
 #include <opae/types_enum.h>
+
+#undef _GNU_SOURCE
 
 /**
  * Object for expressing FPGA resource properties

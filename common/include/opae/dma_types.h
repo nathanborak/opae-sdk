@@ -32,12 +32,17 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <pthread.h>
+#include <semaphore.h>
 #include <signal.h>
 
 #undef _GNU_SOURCE
 
 #ifndef DMA_TYPES_H
 #define DMA_TYPES_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /**
  * typedef dma_cookie_t - an opaque DMA cookie
@@ -116,7 +121,7 @@ typedef enum {
  * @device: ptr to the dma device who supplies this channel, always !%NULL
  * @cookie: last cookie value returned to client
  * @completed_cookie: last completed cookie for this channel
- * @private: private data for certain client-channel associations
+ * @context: private data for certain client-channel associations
 */
 
 typedef struct _fpga_dma_channel {
@@ -128,7 +133,8 @@ typedef struct _fpga_dma_channel {
 	fpga_dma_cookie_t cookie;
 	fpga_dma_cookie_t completed_cookie;
 
-	void* private;
+	void *context;
+
 } fpga_dma_channel;
 
 /**
@@ -175,7 +181,7 @@ struct dmaengine_result {
 
 // Callbacks for asynchronous DMA transfers
 typedef void (*fpga_dma_async_tx_cb_result)(void *context,
-					    const struct dmaengine_result *result);
+					    struct dmaengine_result *result);
 
 typedef void (*fpga_dma_async_tx_cb)(void *context);
 
@@ -254,5 +260,9 @@ typedef void *fpga_dma_desc;
 
 // Opaque type for DMA transfer
 typedef void *fpga_dma_transfer;
+
+#ifdef __cplusplus
+} // extern "C"
+#endif // __cplusplus
 
 #endif

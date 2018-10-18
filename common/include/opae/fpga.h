@@ -52,6 +52,6 @@
 #include <opae/version.h>
 #include <opae/sysobject.h>
 #include <opae/userclk.h>
+#include <opae/dma.h>
 
 #endif // __FPGA_FPGA_H__
-

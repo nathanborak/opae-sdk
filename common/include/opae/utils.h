@@ -33,7 +33,6 @@
 #define __FPGA_UTILS_H__
 
 #include <opae/types.h>
-#include <stdio.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -55,4 +54,3 @@ const char *fpgaErrStr(fpga_result e);
 #endif // __cplusplus
 
 #endif // __FPGA_UTILS_H__
-
