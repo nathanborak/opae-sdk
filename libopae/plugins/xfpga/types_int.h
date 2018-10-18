@@ -35,9 +35,10 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <opae/types.h>
-#include <opae/sysobject.h>
 #include <opae/types_enum.h>
+#include <opae/types.h>
+#include <opae/feature_types.h>
+#include <opae/sysobject.h>
 
 #define SYSFS_PATH_MAX 256
 #define SYSFS_FPGA_CLASS_PATH "/sys/class/fpga"
@@ -179,28 +180,6 @@ struct _fpga_object {
 	fpga_object *objects;
 };
 
-#pragma pack(push, 1)
-typedef struct {
-	uint64_t dfh;
-	uint64_t feature_uuid_lo;
-	uint64_t feature_uuid_hi;
-} dfh_feature_t;
-#pragma pack(pop)
-
-typedef union {
-	uint64_t reg;
-	struct {
-		uint64_t feature_type:4;
-		uint64_t reserved_8:8;
-		uint64_t afu_minor:4;
-		uint64_t reserved_7:7;
-		uint64_t end_dfh:1;
-		uint64_t next_dfh:24;
-		uint64_t afu_major:4;
-		uint64_t feature_id:12;
-	} bits;
-} dfh_reg_t;
-
 /** Device-wide unique FPGA feature resource identifier */
 struct _fpga_feature_token {
 	uint64_t magic;
@@ -208,6 +187,7 @@ struct _fpga_feature_token {
 	uint64_t feature_uuid_lo;
 	uint64_t feature_uuid_hi;
 	fpga_token token;
+	pthread_mutex_t lock;
 	struct _fpga_feature_token *next;
 };
 

@@ -36,6 +36,7 @@
 #include <opae/types.h>
 #include <opae/types_enum.h>
 #include <opae/dma_types.h>
+#include <opae/feature.h>
 
 #ifdef __cplusplus
 extern "C" {

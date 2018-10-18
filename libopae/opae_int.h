@@ -33,6 +33,8 @@
 #include <errno.h>
 
 #include <opae/types.h>
+#include <opae/feature_types.h>
+#include <opae/dma_types.h>
 #include <opae/log.h>
 
 #ifndef __USE_GNU

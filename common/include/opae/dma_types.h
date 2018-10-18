@@ -35,6 +35,7 @@
 #include <semaphore.h>
 #include <signal.h>
 
+#include "opae/types.h"
 #undef _GNU_SOURCE
 
 #ifndef DMA_TYPES_H
