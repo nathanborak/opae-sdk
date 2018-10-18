@@ -47,7 +47,7 @@
 
 // Internal functions
 static void addDMADescriptor(uint32_t *index, fpga_dma_channel_type_t type,
-			     fpga_dma_channel_desc *descriptors,
+			     fpga_dma_channel *descriptors,
 			     uint32_t max_index, uint64_t mmio_va,
 			     internal_channel_desc *int_desc, uint64_t offset)
 {
@@ -130,7 +130,7 @@ out:
 // Public APIs
 static fpga_result
 fpgaDmaEnumerateChannelsInt(fpga_handle fpga, uint32_t max_descriptors,
-			    fpga_dma_channel_desc *descriptors,
+			    fpga_dma_channel *descriptors,
 			    uint32_t *num_descriptors,
 			    internal_channel_desc *int_desc)
 {
@@ -193,21 +193,21 @@ fpgaDmaEnumerateChannelsInt(fpga_handle fpga, uint32_t max_descriptors,
 			if ((feature_uuid_lo == M2S_DMA_UUID_L)
 			    && (feature_uuid_hi == M2S_DMA_UUID_H)) {
 				// Found one. Record it.
-				addDMADescriptor(num_descriptors, TX_ST,
+				addDMADescriptor(num_descriptors, DMA_TX_ST,
 						 descriptors, max_descriptors,
 						 mmio_va, int_desc, offset);
 			}
 			if ((feature_uuid_lo == S2M_DMA_UUID_L)
 			    && (feature_uuid_hi == S2M_DMA_UUID_H)) {
 				// Found one. Record it.
-				addDMADescriptor(num_descriptors, RX_ST,
+				addDMADescriptor(num_descriptors, DMA_RX_ST,
 						 descriptors, max_descriptors,
 						 mmio_va, int_desc, offset);
 			}
 			if ((feature_uuid_lo == FPGA_DMA_UUID_L)
 			    && (feature_uuid_hi == FPGA_DMA_UUID_H)) {
 				// Found one. Record it.
-				addDMADescriptor(num_descriptors, MM,
+				addDMADescriptor(num_descriptors, DMA_MM,
 						 descriptors, max_descriptors,
 						 mmio_va, int_desc, offset);
 			}
@@ -225,7 +225,7 @@ out:
 
 inline fpga_result fpgaDmaEnumerateChannels(fpga_dma_handle dma_ch,
 					    uint32_t max_descriptors,
-					    fpga_dma_channel_desc *descriptors,
+					    fpga_dma_channel *descriptors,
 					    uint32_t *num_descriptors)
 {
 	m2m_dma_handle_t *dma_h = (m2m_dma_handle_t *)dma_ch;
@@ -394,13 +394,13 @@ inline fpga_result fpgaDmaClose(fpga_dma_handle *_dma_h)
 		res = fpgaDmaCloseChannel(&dma_h->open_channels[i]);
 		if (FPGA_OK != res) {
 			FPGA_DMA_ST_ERR("fpgaDmaClose: closing channel")
-		}
+				}
 
 		assert(NULL == dma_h->open_channels[i]);
 	}
 
 	// Terminate the spawned threads by sending a termination transfer
-	kill_transfer.ch_type = INVALID_TYPE;
+	kill_transfer.ch_type = DMA_INVALID_TYPE;
 	fpgaDmaEnqueue(&dma_h->transferCompleteq, &kill_transfer);
 
 	// Wait for the threads to exit
@@ -471,73 +471,73 @@ inline fpga_result fpgaDmaOpenChannel(fpga_dma_handle _dma_h,
 	handle_common **comm = (handle_common **)&dma_ch;
 	sem_t *thread_sem = NULL;
 	switch (ch_type) {
-	case TX_ST:
-		dma_ch = calloc(1, sizeof(m2s_dma_handle_t));
-		if (!dma_ch) {
-			return FPGA_NO_MEMORY;
-		}
-		m2s_dma_handle_t *m2s_dma_ch = (m2s_dma_handle_t *)dma_ch;
-		m2s_dma_ch->header.magic_id = FPGA_DMA_TX_CHANNEL_MAGIC_ID;
-		m2s_dma_ch->header.chan_desc = desc_p;
-		m2s_dma_ch->header.ch_type = TX_ST;
-		sem_init(&dma_hx->m2s_thread_sem, 0, 0);
-		thread_sem = &dma_hx->m2s_thread_sem;
-		break;
+		case DMA_TX_ST:
+			dma_ch = calloc(1, sizeof(m2s_dma_handle_t));
+			if (!dma_ch) {
+				return FPGA_NO_MEMORY;
+			}
+			m2s_dma_handle_t *m2s_dma_ch = (m2s_dma_handle_t *)dma_ch;
+			m2s_dma_ch->header.magic_id = FPGA_DMA_TX_CHANNEL_MAGIC_ID;
+			m2s_dma_ch->header.chan_desc = desc_p;
+			m2s_dma_ch->header.ch_type = DMA_TX_ST;
+			sem_init(&dma_hx->m2s_thread_sem, 0, 0);
+			thread_sem = &dma_hx->m2s_thread_sem;
+			break;
 
-	case RX_ST:
-		dma_ch = calloc(1, sizeof(s2m_dma_handle_t));
-		if (!dma_ch) {
-			return FPGA_NO_MEMORY;
-		}
-		s2m_dma_handle_t *s2m_dma_ch = (s2m_dma_handle_t *)dma_ch;
-		s2m_dma_ch->header.magic_id = FPGA_DMA_RX_CHANNEL_MAGIC_ID;
-		s2m_dma_ch->header.chan_desc = desc_p;
-		s2m_dma_ch->header.ch_type = RX_ST;
-		sem_init(&dma_hx->s2m_thread_sem, 0, 0);
-		thread_sem = &dma_hx->s2m_thread_sem;
-		s2m_dma_ch->dma_rsp_base = desc_p->dma_base + FPGA_DMA_RESPONSE;
-		s2m_dma_ch->dma_streaming_valve_base =
-			desc_p->dma_base + FPGA_DMA_STREAMING_VALVE;
-		break;
+		case DMA_RX_ST:
+			dma_ch = calloc(1, sizeof(s2m_dma_handle_t));
+			if (!dma_ch) {
+				return FPGA_NO_MEMORY;
+			}
+			s2m_dma_handle_t *s2m_dma_ch = (s2m_dma_handle_t *)dma_ch;
+			s2m_dma_ch->header.magic_id = FPGA_DMA_RX_CHANNEL_MAGIC_ID;
+			s2m_dma_ch->header.chan_desc = desc_p;
+			s2m_dma_ch->header.ch_type = DMA_RX_ST;
+			sem_init(&dma_hx->s2m_thread_sem, 0, 0);
+			thread_sem = &dma_hx->s2m_thread_sem;
+			s2m_dma_ch->dma_rsp_base = desc_p->dma_base + FPGA_DMA_RESPONSE;
+			s2m_dma_ch->dma_streaming_valve_base =
+				desc_p->dma_base + FPGA_DMA_STREAMING_VALVE;
+			break;
 
-	case MM:
-		dma_ch = calloc(1, sizeof(m2m_dma_handle_t));
-		if (!dma_ch) {
-			return FPGA_NO_MEMORY;
-		}
-		m2m_dma_handle_t *m2m_dma_ch = (m2m_dma_handle_t *)dma_ch;
-		m2m_dma_ch->header.magic_id = FPGA_MSGDMA_MAGIC_ID;
-		m2m_dma_ch->header.chan_desc = desc_p;
-		m2m_dma_ch->dma_ase_cntl_base =
-			desc_p->dma_base + FPGA_DMA_ADDR_SPAN_EXT_CNTL;
-		m2m_dma_ch->dma_ase_data_base =
-			desc_p->dma_base + FPGA_DMA_ADDR_SPAN_EXT_DATA;
-		m2m_dma_ch->cur_ase_page = 0xffffffffffffffffUll;
+		case DMA_MM:
+			dma_ch = calloc(1, sizeof(m2m_dma_handle_t));
+			if (!dma_ch) {
+				return FPGA_NO_MEMORY;
+			}
+			m2m_dma_handle_t *m2m_dma_ch = (m2m_dma_handle_t *)dma_ch;
+			m2m_dma_ch->header.magic_id = FPGA_MSGDMA_MAGIC_ID;
+			m2m_dma_ch->header.chan_desc = desc_p;
+			m2m_dma_ch->dma_ase_cntl_base =
+				desc_p->dma_base + FPGA_DMA_ADDR_SPAN_EXT_CNTL;
+			m2m_dma_ch->dma_ase_data_base =
+				desc_p->dma_base + FPGA_DMA_ADDR_SPAN_EXT_DATA;
+			m2m_dma_ch->cur_ase_page = 0xffffffffffffffffUll;
 
-		// Allocate magic number buffer
-		res = fpgaPrepareBuffer(dma_hx->main_header.fpga_h,
-					FPGA_DMA_ALIGN_BYTES,
-					(void **)&(m2m_dma_ch->magic_buf),
-					&m2m_dma_ch->magic_wsid, 0);
-		ON_ERR_GOTO(res, out, "fpgaPrepareBuffer");
+			// Allocate magic number buffer
+			res = fpgaPrepareBuffer(dma_hx->main_header.fpga_h,
+						FPGA_DMA_ALIGN_BYTES,
+						(void **)&(m2m_dma_ch->magic_buf),
+						&m2m_dma_ch->magic_wsid, 0);
+			ON_ERR_GOTO(res, out, "fpgaPrepareBuffer");
 
-		res = fpgaGetIOAddress(dma_hx->main_header.fpga_h,
-				       m2m_dma_ch->magic_wsid,
-				       &m2m_dma_ch->magic_iova);
-		if (FPGA_OK != res) {
-			res = fpgaReleaseBuffer(dma_hx->main_header.fpga_h,
-						m2m_dma_ch->magic_wsid);
-			ON_ERR_GOTO(res, out, "fpgaReleaseBuffer");
-			goto out;
-		}
+			res = fpgaGetIOAddress(dma_hx->main_header.fpga_h,
+					       m2m_dma_ch->magic_wsid,
+					       &m2m_dma_ch->magic_iova);
+			if (FPGA_OK != res) {
+				res = fpgaReleaseBuffer(dma_hx->main_header.fpga_h,
+							m2m_dma_ch->magic_wsid);
+				ON_ERR_GOTO(res, out, "fpgaReleaseBuffer");
+				goto out;
+			}
 
-		m2m_dma_ch->header.ch_type = MM;
-		sem_init(&dma_hx->m2m_thread_sem, 0, 0);
-		thread_sem = &dma_hx->m2m_thread_sem;
-		break;
+			m2m_dma_ch->header.ch_type = DMA_MM;
+			sem_init(&dma_hx->m2m_thread_sem, 0, 0);
+			thread_sem = &dma_hx->m2m_thread_sem;
+			break;
 
-	default:
-		FPGA_DMA_ST_ERR("Unknown channel type");
+		default:
+			FPGA_DMA_ST_ERR("Unknown channel type");
 	}
 
 	(*comm)->fpga_h = dma_hx->main_header.fpga_h;
@@ -569,21 +569,21 @@ inline fpga_result fpgaDmaOpenChannel(fpga_dma_handle _dma_h,
 	// Mark this channel as in-use
 	dma_hx->open_channels[dma_channel_index] = dma_ch;
 
-	if (ch_type == TX_ST) {
+	if (ch_type == DMA_TX_ST) {
 		if (pthread_create(&dma_hx->m2s_thread_id, NULL,
 				   m2sTransactionWorker, (void *)dma_ch)
 		    != 0) {
 			res = FPGA_EXCEPTION;
 			ON_ERR_GOTO(res, destroy_eh, "pthread_create");
 		}
-	} else if (ch_type == RX_ST) {
+	} else if (ch_type == DMA_RX_ST) {
 		if (pthread_create(&dma_hx->s2m_thread_id, NULL,
 				   s2mTransactionWorker, (void *)dma_ch)
 		    != 0) {
 			res = FPGA_EXCEPTION;
 			ON_ERR_GOTO(res, destroy_eh, "pthread_create");
 		}
-	} else if (ch_type == MM) {
+	} else if (ch_type == DMA_MM) {
 		if (pthread_create(&dma_hx->m2m_thread_id, NULL,
 				   m2mTransactionWorker, (void *)dma_ch)
 		    != 0) {
@@ -662,68 +662,68 @@ inline fpga_result fpgaDmaCloseChannel(fpga_dma_channel_handle *_dma_h)
 	void *th_retval;
 
 	switch (m2m->header.ch_type) {
-	case TX_ST:
-		// Terminate the spawned threads by sending a termination
-		// transfer
-		fpgaDmaEnqueue(&m2s->header.transferRequestq, &kill_transfer);
+		case DMA_TX_ST:
+			// Terminate the spawned threads by sending a termination
+			// transfer
+			fpgaDmaEnqueue(&m2s->header.transferRequestq, &kill_transfer);
 
-		if (pthread_join(m2s->header.dma_h->m2s_thread_id,
-				 &th_retval)) {
-			FPGA_DMA_ST_ERR("pthread_join for completion queue");
-		}
-		if (th_retval != (void *)dma_h) {
-			FPGA_DMA_ST_ERR(
-				"pthread_join for TX_ST - bad return value");
-		}
-		releaseChannelResources(&m2s->header);
+			if (pthread_join(m2s->header.dma_h->m2s_thread_id,
+					 &th_retval)) {
+				FPGA_DMA_ST_ERR("pthread_join for completion queue");
+			}
+			if (th_retval != (void *)dma_h) {
+				FPGA_DMA_ST_ERR(
+					"pthread_join for TX_ST - bad return value");
+			}
+			releaseChannelResources(&m2s->header);
 
-		fpgaDmaQueueDestroy(m2s->header.dma_h,
-				    &m2s->header.transferRequestq, false);
-		break;
-	case RX_ST:
-		// Terminate the spawned threads by sending a termination
-		// transfer
-		fpgaDmaEnqueue(&s2m->header.transferRequestq, &kill_transfer);
+			fpgaDmaQueueDestroy(m2s->header.dma_h,
+					    &m2s->header.transferRequestq, false);
+			break;
+		case DMA_RX_ST:
+			// Terminate the spawned threads by sending a termination
+			// transfer
+			fpgaDmaEnqueue(&s2m->header.transferRequestq, &kill_transfer);
 
-		if (pthread_join(s2m->header.dma_h->s2m_thread_id,
-				 &th_retval)) {
-			FPGA_DMA_ST_ERR("pthread_join for completion queue");
-		}
-		if (th_retval != (void *)dma_h) {
-			FPGA_DMA_ST_ERR(
-				"pthread_join for RX_ST - bad return value");
-		}
-		releaseChannelResources(&s2m->header);
+			if (pthread_join(s2m->header.dma_h->s2m_thread_id,
+					 &th_retval)) {
+				FPGA_DMA_ST_ERR("pthread_join for completion queue");
+			}
+			if (th_retval != (void *)dma_h) {
+				FPGA_DMA_ST_ERR(
+					"pthread_join for RX_ST - bad return value");
+			}
+			releaseChannelResources(&s2m->header);
 
-		fpgaDmaQueueDestroy(s2m->header.dma_h,
-				    &s2m->header.transferRequestq, false);
-		break;
-	case MM:
-		// Terminate the spawned threads by sending a termination
-		// transfer
-		fpgaDmaEnqueue(&m2m->header.transferRequestq, &kill_transfer);
+			fpgaDmaQueueDestroy(s2m->header.dma_h,
+					    &s2m->header.transferRequestq, false);
+			break;
+		case DMA_MM:
+			// Terminate the spawned threads by sending a termination
+			// transfer
+			fpgaDmaEnqueue(&m2m->header.transferRequestq, &kill_transfer);
 
-		if (pthread_join(m2m->header.dma_h->m2m_thread_id,
-				 &th_retval)) {
-			FPGA_DMA_ST_ERR("pthread_join for completion queue");
-		}
-		if (th_retval != (void *)dma_h) {
-			FPGA_DMA_ST_ERR(
-				"pthread_join for MM - bad return value");
-		}
+			if (pthread_join(m2m->header.dma_h->m2m_thread_id,
+					 &th_retval)) {
+				FPGA_DMA_ST_ERR("pthread_join for completion queue");
+			}
+			if (th_retval != (void *)dma_h) {
+				FPGA_DMA_ST_ERR(
+					"pthread_join for MM - bad return value");
+			}
 
-		res = fpgaReleaseBuffer(m2m->header.fpga_h, m2m->magic_wsid);
-		ON_ERR_GOTO(res, out, "fpgaReleaseBuffer");
+			res = fpgaReleaseBuffer(m2m->header.fpga_h, m2m->magic_wsid);
+			ON_ERR_GOTO(res, out, "fpgaReleaseBuffer");
 
-		fpgaDmaQueueDestroy(m2m->header.dma_h,
-				    &m2m->header.transferRequestq, false);
+			fpgaDmaQueueDestroy(m2m->header.dma_h,
+					    &m2m->header.transferRequestq, false);
 
-		releaseChannelResources(&m2m->header);
-		break;
+			releaseChannelResources(&m2m->header);
+			break;
 
-	default:
-		FPGA_DMA_ST_ERR("Bad channel type in closeChannel");
-		break;
+		default:
+			FPGA_DMA_ST_ERR("Bad channel type in closeChannel");
+			break;
 	}
 
 out:

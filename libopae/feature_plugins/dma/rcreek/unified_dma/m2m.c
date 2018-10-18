@@ -32,7 +32,6 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
-#include <opae/fpga.h>
 #include <stddef.h>
 #include <poll.h>
 #include <errno.h>
@@ -41,6 +40,9 @@
 #include <inttypes.h>
 #include <signal.h>
 #include <time.h>
+
+#include <opae/fpga.h>
+
 #include "fpga_dma_internal.h"
 #include "fpga_dma.h"
 #include "globals.h"

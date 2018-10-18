@@ -24,10 +24,11 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,  EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#include <opae/types.h>
-#include <opae/sysobject.h>
 #include <opae/types_enum.h>
+#include <opae/types.h>
+#include <opae/feature_types.h>
 #include <opae/dma_types.h>
+#include <opae/sysobject.h>
 
 #ifndef DMA_TYPES_INT_H
 #define DMA_TYPES_INT_H
