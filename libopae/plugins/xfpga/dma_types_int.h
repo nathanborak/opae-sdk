@@ -337,33 +337,37 @@ typedef struct _m2m_dma_handle {
 	uint64_t magic_wsid;
 } m2m_dma_handle_t;
 
-static inline fpga_result dmaengine_prep_slave_single(fpga_dma_channel_handle chan,
-						      fpga_dma_async_transfer *tx,
-						      uint64_t flags)
-{
-	// struct scatterlist sg;
-	// sg_init_table(&sg, 1);
-	// sg_dma_address(&sg) = buf;
-	// sg_dma_len(&sg) = len;
+// static inline fpga_result dmaengine_prep_slave_single(fpga_dma_channel_handle chan,
+// 						      fpga_dma_async_transfer *tx,
+// 						      uint64_t flags)
+// {
+// 	fpga_result result = FPGA_OK;
+// 	// struct scatterlist sg;
+// 	// sg_init_table(&sg, 1);
+// 	// sg_dma_address(&sg) = buf;
+// 	// sg_dma_len(&sg) = len;
 
-	// if (!chan || !chan->device || !chan->device->device_prep_slave_sg)
-	// 	return NULL;
+// 	// if (!chan || !chan->device || !chan->device->device_prep_slave_sg)
+// 	// 	return NULL;
 
-	// return chan->device->device_prep_slave_sg(chan, &sg, 1,
-	// 					  dir, flags, NULL);
-}
+// 	// return chan->device->device_prep_slave_sg(chan, &sg, 1,
+// 	// 					  dir, flags, NULL);
+// 	return result;
+// }
 
-static inline fpga_result dmaengine_prep_slave_sg(fpga_dma_channel_handle chan,
-						  fpga_dma_async_transfer *tx,
-						  struct scatterlist *sgl,
-						  uint64_t sg_len,
-						  uint64_t flags)
-{
-	// if (!chan || !chan->device || !chan->device->device_prep_slave_sg)
-	// 	return NULL;
+// static inline fpga_result dmaengine_prep_slave_sg(fpga_dma_channel_handle chan,
+// 						  fpga_dma_async_transfer *tx,
+// 						  struct scatterlist *sgl,
+// 						  uint64_t sg_len,
+// 						  uint64_t flags)
+// {
+// 	fpga_result result = FPGA_OK;
+// 	// if (!chan || !chan->device || !chan->device->device_prep_slave_sg)
+// 	// 	return NULL;
 
-	// return chan->device->device_prep_slave_sg(chan, sgl, sg_len,
-	// 					  dir, flags, NULL);
-}
+// 	// return chan->device->device_prep_slave_sg(chan, sgl, sg_len,
+// 	// 					  dir, flags, NULL);
+// 	return result;
+// }
 
 #endif
