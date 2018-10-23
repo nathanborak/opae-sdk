@@ -65,11 +65,8 @@ typedef union {
 } _fpga_dma_desc_ctrl_t;
 
 /* The fpga_dma_desc encapsulateds all information about the descriptors */
-typedef union {
-    uint64_t reg;
-
-    // Older DMA descriptor format
-    struct __attribute__((__packed__)) {
+#pragma pack(push, 1)
+    typedef struct {
 	//0x0
 	uint32_t rd_address;
 	//0x4
@@ -89,8 +86,8 @@ typedef union {
 	uint32_t wr_address_ext;
 	//0x1c
 	_fpga_dma_desc_ctrl_t control;
-    };
 } _fpga_dma_desc;
+#pragma pack(pop)
 
 // The `fpga_dma_transfer` objects encapsulate all the information about an transfer
 typedef struct _fpga_dma_transfer {

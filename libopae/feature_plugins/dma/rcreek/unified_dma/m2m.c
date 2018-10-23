@@ -337,11 +337,12 @@ static fpga_result transferHostToFpga(m2m_dma_handle_t *dma_h,
 				buffers[i % num_buffers]->dma_buf_iova
 				| FPGA_DMA_HOST_MASK;
 			if (do_memcpy) {
-				local_memcpy(dma_buf_ptr,
-					     (void *)(src + i * buffer_size),
-					     (i == (dma_chunks - 1))
-					     ? dma_last_chunk
-					     : buffer_size);
+				// Use standard memcpy
+				memcpy(dma_buf_ptr,
+				       (void *)(src + i * buffer_size),
+				       (i == (dma_chunks - 1))
+				       ? dma_last_chunk
+				       : buffer_size);
 			}
 			if ((ping_pong
 			     && ((i % (uint64_t)half_num_buffers

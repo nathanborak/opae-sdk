@@ -89,8 +89,8 @@ fpga_result _send_descriptor(handle_common *dma_h, msgdma_ext_desc_t *desc)
 	debug_print("desc.rd_address_ext %x\n", desc->rd_address_ext);
 	debug_print("desc.wr_address_ext %x\n", desc->wr_address_ext);
 
-	debug_print("SGDMA_CSR_BASE = %lx SGDMA_DESC_BASE=%lx\n",
-		    dma_h->dma_csr_base, dma_h->dma_desc_base);
+	/* debug_print("SGDMA_CSR_BASE = %lx SGDMA_DESC_BASE=%lx\n", */
+	/* 	    dma_h->dma_csr_base, dma_h->dma_desc_base); */
 
 #ifdef CHECK_DELAYS_MM
 	bool first = true;
