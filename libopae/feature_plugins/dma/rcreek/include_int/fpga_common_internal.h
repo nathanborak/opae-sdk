@@ -183,7 +183,6 @@
 #define FPGA_DMA_BUF_ALIGN_SIZE FPGA_DMA_BUF_SIZE
 
 // Convenience macros
-#define FPGA_DMA_DEBUG 1
 #ifdef FPGA_DMA_DEBUG
 #define debug_print(fmt, ...)                                                  \
 	do {                                                                   \

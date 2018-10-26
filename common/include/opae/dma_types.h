@@ -94,23 +94,23 @@ typedef enum {
  *  data descriptors.
  */
 typedef enum {
-	DMA_TX_NO_PACKET = (1 << 0), // conventional MM DMA
-	DMA_TX_GENERATE_SOP = (1 << 1),
-	DMA_TX_GENERATE_EOP = (1 << 2),
-	DMA_TX_GENERATE_SOP_AND_EOP = (1 << 3), // TODO: replace/redundant with previous
-	DMA_TX_GENERATE_INTERRUPT = (1 << 4),
-	DMA_TX_GENERATE_FENCE = (1 << 5),
-	DMA_TX_CMD = (1 << 6),
-	DMA_TX_FPGA_MAX_CTRL = (1 << 7)
+	DMA_TX_NO_PACKET = 0, // conventional MM DMA
+	DMA_TX_GENERATE_SOP,
+	DMA_TX_GENERATE_EOP,
+	DMA_TX_GENERATE_SOP_AND_EOP,
+	DMA_TX_GENERATE_INTERRUPT,
+	DMA_TX_GENERATE_FENCE,
+	DMA_TX_CMD,
+	DMA_TX_FPGA_MAX_CTRL
 } fpga_dma_tx_ctrl_t;
 
 typedef enum {
-	DMA_RX_NO_PACKET = (1 << 0), // conventional MM DMA
-	DMA_RX_END_ON_EOP = (1 << 2),
-	DMA_RX_GENERATE_INTERRUPT = (1 << 4),
-	DMA_RX_GENERATE_FENCE = (1 << 5),
-	DMA_RX_CMD = (1 << 6),
-	DMA_RX_FPGA_MAX_CTRL = (1 << 7),
+	DMA_RX_NO_PACKET = 0, // conventional MM DMA
+	DMA_RX_END_ON_EOP,
+	DMA_RX_GENERATE_INTERRUPT,
+	DMA_RX_GENERATE_FENCE,
+	DMA_RX_CMD,
+	DMA_RX_FPGA_MAX_CTRL
 } fpga_dma_rx_ctrl_t;
 
 // Channel types
@@ -150,11 +150,11 @@ typedef struct _fpga_dma_channel {
  * @DMA_TRANS_ERROR: transaction failed
  */
 typedef enum {
-	DMA_TRANS_IN_PROGRESS = 1,
-	DMA_TRANS_NOT_IN_PROGRESS = 1 << 2,
-	DMA_TRANS_COMPLETE = 1 << 3,
-	DMA_TRANS_PAUSED = 1 << 4,
-	DMA_TRANS_ERROR = 1 << 5
+	DMA_TRANS_IN_PROGRESS = 0,
+	DMA_TRANS_NOT_IN_PROGRESS = 1,
+	DMA_TRANS_COMPLETE,
+	DMA_TRANS_PAUSED,
+	DMA_TRANS_ERROR
 } fpga_transf_status_t;
 
 /**
