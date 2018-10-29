@@ -47,7 +47,7 @@
 static void sig_handler(int sig, siginfo_t *signfo, void *unused);
 static volatile uint32_t *CsrControl;
 
-int fpgaDma_setup_sig_handler(fpga_dma_handle_t *dma_h)
+int fpgaDMA_setup_sig_handler(fpga_dma_handle_t *dma_h)
 {
 	struct sigaction sa;
 	int sigres;
@@ -66,7 +66,7 @@ int fpgaDma_setup_sig_handler(fpga_dma_handle_t *dma_h)
 	return 0;
 }
 
-void fpgaDma_restore_sig_handler(fpga_dma_handle_t *dma_h)
+void fpgaDMA_restore_sig_handler(fpga_dma_handle_t *dma_h)
 {
 	int sigres;
 

@@ -66,13 +66,13 @@ void *TransactionCompleteWorker(void *dma_handle)
 
 	while (1) {
 		fpga_dma_transfer_t xfer;
-		res = fpgaDmaDequeue(&dma_h->transferCompleteq, &xfer);
+		res = fpgaDMADequeue(&dma_h->transferCompleteq, &xfer);
 		if (res == FPGA_NO_ACCESS) {
 			// FPGA_DMA_ST_ERR("Completion thread termination");
 			break;
 		}
 		if (res != FPGA_OK) {
-			FPGA_DMA_ST_ERR("fpgaDmaDequeue failed");
+			FPGA_DMA_ST_ERR("fpgaDMADequeue failed");
 			return NULL;
 		}
 		debug_print(

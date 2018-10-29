@@ -45,7 +45,7 @@
 
 // Internal Functions
 
-static fpga_dma_transfer_t *getFreeTransfer(qinfo_t *q,
+static inline fpga_dma_transfer_t *getFreeTransfer(qinfo_t *q,
 						   fpga_dma_transfer_t *tf)
 {
 	fpga_dma_transfer_t *new_t = NULL;
@@ -66,7 +66,7 @@ static fpga_dma_transfer_t *getFreeTransfer(qinfo_t *q,
 	return new_t;
 }
 
-fpga_result fpgaDmaQueueInit(fpga_dma_handle_t *dma_h, qinfo_t *q)
+inline fpga_result fpgaDMAQueueInit(fpga_dma_handle_t *dma_h, qinfo_t *q)
 {
 	memset(q, 0, sizeof(qinfo_t));
 	q->read_index = q->write_index = -1;
@@ -84,7 +84,7 @@ fpga_result fpgaDmaQueueInit(fpga_dma_handle_t *dma_h, qinfo_t *q)
 	return FPGA_OK;
 }
 
-fpga_result fpgaDmaQueueDestroy(fpga_dma_handle_t *dma_h, qinfo_t *q,
+inline fpga_result fpgaDMAQueueDestroy(fpga_dma_handle_t *dma_h, qinfo_t *q,
 				       bool free_only)
 {
 	int i = 0;
@@ -143,7 +143,7 @@ fpga_result fpgaDmaQueueDestroy(fpga_dma_handle_t *dma_h, qinfo_t *q,
 	return FPGA_OK;
 }
 
-fpga_result fpgaDmaEnqueue(qinfo_t *q, fpga_dma_transfer_t *tf)
+inline fpga_result fpgaDMAEnqueue(qinfo_t *q, fpga_dma_transfer_t *tf)
 {
 	int value = 0;
 
@@ -191,7 +191,7 @@ fpga_result fpgaDmaEnqueue(qinfo_t *q, fpga_dma_transfer_t *tf)
 	return FPGA_OK;
 }
 
-fpga_result fpgaDmaDequeue(qinfo_t *q, fpga_dma_transfer_t *tf)
+inline fpga_result fpgaDMADequeue(qinfo_t *q, fpga_dma_transfer_t *tf)
 {
 	// Wait till have an entry
 	if (sem_wait(&q->q_semaphore->m_semaphore)) {

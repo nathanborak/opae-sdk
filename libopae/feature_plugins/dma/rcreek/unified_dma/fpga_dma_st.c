@@ -43,7 +43,7 @@
 #include "fpga_dma_internal.h"
 #include "fpga_dma.h"
 
-inline fpga_result fpgaDmaGetChannelType(fpga_dma_channel_handle _dma,
+inline fpga_result fpgaDMAGetChannelType(fpga_dma_channel_handle _dma,
 					 fpga_dma_channel_type_t *ch_type)
 {
 	fpga_dma_handle_t *dma = (fpga_dma_handle_t *)_dma;
@@ -63,7 +63,7 @@ inline fpga_result fpgaDmaGetChannelType(fpga_dma_channel_handle _dma,
 	return FPGA_OK;
 }
 
-inline fpga_result fpgaDmaTransferInit(fpga_dma_channel_handle _dma_h,
+inline fpga_result fpgaDMATransferInit(fpga_dma_channel_handle _dma_h,
 				       fpga_dma_transfer *transfer)
 {
 	fpga_result res = FPGA_OK;
@@ -96,8 +96,8 @@ inline fpga_result fpgaDmaTransferInit(fpga_dma_channel_handle _dma_h,
 	tmp->dst = 0;
 	tmp->len = 0;
 	tmp->transfer_type = HOST_MM_TO_FPGA_ST;
-	tmp->tx_ctrl = DMA_TX_NO_PACKET; // deterministic length
-	tmp->rx_ctrl = DMA_RX_NO_PACKET; // deterministic length
+	tmp->tx_ctrl = TX_NO_PACKET; // deterministic length
+	tmp->rx_ctrl = RX_NO_PACKET; // deterministic length
 	tmp->cb = NULL;
 	tmp->context = NULL;
 	tmp->rx_bytes = 0;
@@ -105,7 +105,7 @@ inline fpga_result fpgaDmaTransferInit(fpga_dma_channel_handle _dma_h,
 
 	tmp->tf_mutex = getFreeMutex(&m2m->header.dma_h->main_header, NULL);
 	tmp->tf_semaphore = getFreeSemaphore(&m2m->header.dma_h->main_header, 0,
-					     DMA_TRANS_NOT_IN_PROGRESS);
+					     TRANSFER_NOT_IN_PROGRESS);
 	tmp->ch_type = m2m->header.ch_type;
 
 	if (!tmp->tf_mutex) {
@@ -117,7 +117,7 @@ inline fpga_result fpgaDmaTransferInit(fpga_dma_channel_handle _dma_h,
 	return res;
 }
 
-inline fpga_result fpgaDmaTransferReset(fpga_dma_channel_handle dma,
+inline fpga_result fpgaDMATransferReset(fpga_dma_channel_handle dma,
 					fpga_dma_transfer _transfer)
 {
 	(void)dma;
@@ -138,8 +138,8 @@ inline fpga_result fpgaDmaTransferReset(fpga_dma_channel_handle dma,
 	transfer->dst = 0;
 	transfer->len = 0;
 	transfer->transfer_type = HOST_MM_TO_FPGA_ST;
-	transfer->tx_ctrl = DMA_TX_NO_PACKET; // deterministic length
-	transfer->rx_ctrl = DMA_RX_NO_PACKET; // deterministic length
+	transfer->tx_ctrl = TX_NO_PACKET; // deterministic length
+	transfer->rx_ctrl = RX_NO_PACKET; // deterministic length
 	transfer->cb = NULL;
 	transfer->context = NULL;
 	transfer->rx_bytes = 0;
@@ -153,7 +153,7 @@ inline fpga_result fpgaDmaTransferReset(fpga_dma_channel_handle dma,
 	return res;
 }
 
-inline fpga_result fpgaDmaTransferDestroy(fpga_dma_channel_handle _dma_h,
+inline fpga_result fpgaDMATransferDestroy(fpga_dma_channel_handle _dma_h,
 					  fpga_dma_transfer *_transfer)
 {
 	fpga_result res = FPGA_OK;
@@ -214,7 +214,7 @@ inline fpga_result fpgaDmaTransferDestroy(fpga_dma_channel_handle _dma_h,
 	return res;
 }
 
-inline fpga_result fpgaDmaTransferSetSrc(fpga_dma_transfer _transfer,
+inline fpga_result fpgaDMATransferSetSrc(fpga_dma_transfer _transfer,
 					 uint64_t src)
 {
 	fpga_result res = FPGA_OK;
@@ -241,7 +241,7 @@ inline fpga_result fpgaDmaTransferSetSrc(fpga_dma_transfer _transfer,
 	return res;
 }
 
-inline fpga_result fpgaDmaTransferSetDst(fpga_dma_transfer _transfer,
+inline fpga_result fpgaDMATransferSetDst(fpga_dma_transfer _transfer,
 					 uint64_t dst)
 {
 	fpga_result res = FPGA_OK;
@@ -265,7 +265,7 @@ inline fpga_result fpgaDmaTransferSetDst(fpga_dma_transfer _transfer,
 	return res;
 }
 
-inline fpga_result fpgaDmaTransferSetLen(fpga_dma_transfer _transfer,
+inline fpga_result fpgaDMATransferSetLen(fpga_dma_transfer _transfer,
 					 uint64_t len)
 {
 	fpga_result res = FPGA_OK;
@@ -288,7 +288,7 @@ inline fpga_result fpgaDmaTransferSetLen(fpga_dma_transfer _transfer,
 	return res;
 }
 
-inline fpga_result fpgaDmaTransferSetTransferType(fpga_dma_transfer _transfer,
+inline fpga_result fpgaDMATransferSetTransferType(fpga_dma_transfer _transfer,
 						  fpga_dma_transfer_type_t type)
 {
 	fpga_result res = FPGA_OK;
@@ -322,7 +322,7 @@ inline fpga_result fpgaDmaTransferSetTransferType(fpga_dma_transfer _transfer,
 	return res;
 }
 
-inline fpga_result fpgaDmaTransferSetTxControl(fpga_dma_transfer _transfer,
+inline fpga_result fpgaDMATransferSetTxControl(fpga_dma_transfer _transfer,
 					       fpga_dma_tx_ctrl_t tx_ctrl)
 {
 	fpga_result res = FPGA_OK;
@@ -333,7 +333,7 @@ inline fpga_result fpgaDmaTransferSetTxControl(fpga_dma_transfer _transfer,
 		return FPGA_INVALID_PARAM;
 	}
 
-	if (tx_ctrl >= DMA_TX_FPGA_MAX_CTRL) {
+	if (tx_ctrl >= FPGA_MAX_TX_CTRL) {
 		FPGA_DMA_ST_ERR("Invalid TX Ctrl");
 		return FPGA_INVALID_PARAM;
 	}
@@ -351,7 +351,7 @@ inline fpga_result fpgaDmaTransferSetTxControl(fpga_dma_transfer _transfer,
 	return res;
 }
 
-inline fpga_result fpgaDmaTransferSetRxControl(fpga_dma_transfer _transfer,
+inline fpga_result fpgaDMATransferSetRxControl(fpga_dma_transfer _transfer,
 					       fpga_dma_rx_ctrl_t rx_ctrl)
 {
 	fpga_result res = FPGA_OK;
@@ -362,7 +362,7 @@ inline fpga_result fpgaDmaTransferSetRxControl(fpga_dma_transfer _transfer,
 		return FPGA_INVALID_PARAM;
 	}
 
-	if (rx_ctrl >= DMA_RX_FPGA_MAX_CTRL) {
+	if (rx_ctrl >= FPGA_MAX_RX_CTRL) {
 		FPGA_DMA_ST_ERR("Invalid RX Ctrl");
 		return FPGA_INVALID_PARAM;
 	}
@@ -380,9 +380,9 @@ inline fpga_result fpgaDmaTransferSetRxControl(fpga_dma_transfer _transfer,
 	return res;
 }
 
-inline fpga_result fpgaDmaTransferSetTransferCallback(fpga_dma_transfer _transfer,
-						      fpga_dma_async_tx_cb cb,
-						      void *ctxt)
+inline fpga_result
+fpgaDMATransferSetTransferCallback(fpga_dma_transfer _transfer,
+				   fpga_dma_transfer_cb cb, void *ctxt)
 {
 	fpga_result res = FPGA_OK;
 	fpga_dma_transfer_t *transfer = (fpga_dma_transfer_t *)_transfer;
@@ -407,7 +407,7 @@ inline fpga_result fpgaDmaTransferSetTransferCallback(fpga_dma_transfer _transfe
 }
 
 inline fpga_result
-fpgaDmaTransferGetBytesTransferred(fpga_dma_transfer _transfer,
+fpgaDMATransferGetBytesTransferred(fpga_dma_transfer _transfer,
 				   size_t *rx_bytes)
 {
 	fpga_dma_transfer_t *transfer = (fpga_dma_transfer_t *)_transfer;
@@ -437,7 +437,7 @@ fpgaDmaTransferGetBytesTransferred(fpga_dma_transfer _transfer,
 	return FPGA_OK;
 }
 
-inline fpga_result fpgaDmaTransferCheckEopArrived(fpga_dma_transfer _transfer,
+inline fpga_result fpgaDMATransferCheckEopArrived(fpga_dma_transfer _transfer,
 						  bool *eop_arrived)
 {
 	fpga_dma_transfer_t *transfer = (fpga_dma_transfer_t *)_transfer;
@@ -467,7 +467,7 @@ inline fpga_result fpgaDmaTransferCheckEopArrived(fpga_dma_transfer _transfer,
 	return FPGA_OK;
 }
 
-inline fpga_result fpgaDmaTransferStart(fpga_dma_channel_handle _dma,
+inline fpga_result fpgaDMATransferStart(fpga_dma_channel_handle _dma,
 					fpga_dma_transfer _transfer)
 {
 	fpga_result res = FPGA_OK;
@@ -496,23 +496,23 @@ inline fpga_result fpgaDmaTransferStart(fpga_dma_channel_handle _dma,
 		return FPGA_NOT_SUPPORTED;
 	}
 
-	if (m2m->header.ch_type == DMA_RX_ST
+	if (m2m->header.ch_type == RX_ST
 	    && transfer->transfer_type == HOST_MM_TO_FPGA_ST) {
 		FPGA_DMA_ST_ERR(
 			"Incompatible transfer on stream to memory DMA channel");
 		return FPGA_INVALID_PARAM;
 	}
 
-	if (m2m->header.ch_type == DMA_TX_ST
+	if (m2m->header.ch_type == TX_ST
 	    && transfer->transfer_type == FPGA_ST_TO_HOST_MM) {
 		FPGA_DMA_ST_ERR(
 			"Incompatible transfer on memory to stream DMA channel");
 		return FPGA_INVALID_PARAM;
 	}
 
-	if (((transfer->tx_ctrl == DMA_TX_NO_PACKET && m2m->header.ch_type == DMA_TX_ST)
-	     || (transfer->rx_ctrl == DMA_RX_NO_PACKET
-		 && m2m->header.ch_type == DMA_RX_ST))
+	if (((transfer->tx_ctrl == TX_NO_PACKET && m2m->header.ch_type == TX_ST)
+	     || (transfer->rx_ctrl == RX_NO_PACKET
+		 && m2m->header.ch_type == RX_ST))
 	    && ((transfer->len % 64) != 0)) {
 		FPGA_DMA_ST_ERR(
 			"Incompatible transfer length for transfer type NO_PKT");
@@ -533,24 +533,24 @@ inline fpga_result fpgaDmaTransferStart(fpga_dma_channel_handle _dma,
 	// Enqueue the transfer, transfer will be processed in worker thread
 	do {
 		switch (transfer->ch_type) {
-			case DMA_TX_ST:
-				res = fpgaDmaEnqueue(&m2s->header.transferRequestq,
-						     transfer);
-				break;
+		case TX_ST:
+			res = fpgaDMAEnqueue(&m2s->header.transferRequestq,
+					     transfer);
+			break;
 
-			case DMA_RX_ST:
-				res = fpgaDmaEnqueue(&s2m->header.transferRequestq,
-						     transfer);
-				break;
+		case RX_ST:
+			res = fpgaDMAEnqueue(&s2m->header.transferRequestq,
+					     transfer);
+			break;
 
-			case DMA_MM:
-				res = fpgaDmaEnqueue(&m2m->header.transferRequestq,
-						     transfer);
-				break;
+		case MM:
+			res = fpgaDMAEnqueue(&m2m->header.transferRequestq,
+					     transfer);
+			break;
 
-			default:
-				FPGA_DMA_ST_ERR("Invalid channel type in transfer");
-				break;
+		default:
+			FPGA_DMA_ST_ERR("Invalid channel type in transfer");
+			break;
 		}
 	} while (res == FPGA_BUSY);
 
@@ -576,7 +576,7 @@ inline fpga_result fpgaDmaTransferStart(fpga_dma_channel_handle _dma,
 	return res;
 }
 
-inline fpga_result fpgaDmaTransferInitSmall(fpga_dma_channel_handle _dma,
+inline fpga_result fpgaDMATransferInitSmall(fpga_dma_channel_handle _dma,
 					    uint64_t *size, void **buf_ptr,
 					    fpga_dma_transfer *transfer)
 {
@@ -610,7 +610,7 @@ inline fpga_result fpgaDmaTransferInitSmall(fpga_dma_channel_handle _dma,
 		return FPGA_NO_MEMORY;
 	}
 
-	res = fpgaDmaTransferInit(_dma, transfer);
+	res = fpgaDMATransferInit(_dma, transfer);
 	if (FPGA_OK != res) {
 		FPGA_DMA_ST_ERR("Cannot initialize transfer");
 		return res;

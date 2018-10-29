@@ -24,17 +24,21 @@
 ## ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,  EVEN IF ADVISED OF THE
 ## POSSIBILITY OF SUCH DAMAGE.
 
-set(DMA_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
-set(DMA_INCLUDE_INT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include_int)
+#include_directories(${OPAE_SDK_SOURCE}/tools/base/argsfilter)
 
-# utils
-add_subdirectory(utils)
+include_directories(${OPAE_INCLUDE_DIR}
+                    ${DMA_INCLUDE_DIR}
+                    ${DMA_INCLUDE_INT_DIR})
 
-# UMDs
-add_subdirectory(unified_dma)
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -flto")
 
-# tests
-add_subdirectory(tests/streaming)
-add_subdirectory(tests/queue)
-add_subdirectory(tests/pool)
-add_subdirectory(tests/lock)
+add_executable(lock_test
+               lock_test.c)
+
+set_install_rpath(lock_test)
+target_link_libraries(lock_test opae-c fpga_dma_lib)
+set_property(TARGET lock_test PROPERTY C_STANDARD 99)
+
+install(TARGETS lock_test
+    RUNTIME DESTINATION bin
+    COMPONENT toolfpgainfo)

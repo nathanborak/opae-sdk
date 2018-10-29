@@ -430,12 +430,12 @@ int main(int argc, char *argv[])
 	res = fpgaReset(afc_h);
 	ON_ERR_GOTO(res, out_unmap, "fpgaReset");
 
-	res = fpgaDmaOpen(afc_h, &dma_handle);
-	ON_ERR_GOTO(res, out_unmap, "fpgaDmaOpen");
+	res = fpgaDMAOpen(afc_h, &dma_handle);
+	ON_ERR_GOTO(res, out_unmap, "fpgaDMAOpen");
 
 	// Enumerate DMA handles
-	res = fpgaDmaEnumerateChannels(dma_handle, 0, NULL, &count);
-	ON_ERR_GOTO(res, dma_close, "fpgaDmaEnumerateChannels");
+	res = fpgaDMAEnumerateChannels(dma_handle, 0, NULL, &count);
+	ON_ERR_GOTO(res, dma_close, "fpgaDMAEnumerateChannels");
 
 	if (count < 1) {
 		printf("Error: DMA channels not found\n");
@@ -443,10 +443,10 @@ int main(int argc, char *argv[])
 	}
 	printf("No of DMA channels = %08x\n", count);
 
-	fpga_dma_channel *descs = (fpga_dma_channel *)malloc(
-		sizeof(fpga_dma_channel) * count);
-	res = fpgaDmaEnumerateChannels(dma_handle, count, descs, &count);
-	ON_ERR_GOTO(res, free_descs, "fpgaDmaEnumerateChannels");
+	fpga_dma_channel_desc *descs = (fpga_dma_channel_desc *)malloc(
+		sizeof(fpga_dma_channel_desc) * count);
+	res = fpgaDMAEnumerateChannels(dma_handle, count, descs, &count);
+	ON_ERR_GOTO(res, free_descs, "fpgaDMAEnumerateChannels");
 
 free_descs:
 	free(descs);
@@ -523,8 +523,8 @@ free_descs:
 
 
 dma_close:
-	res = fpgaDmaClose(&dma_handle);
-	ON_ERR_GOTO(res, out_unmap, "fpgaDmaClose");
+	res = fpgaDMAClose(&dma_handle);
+	ON_ERR_GOTO(res, out_unmap, "fpgaDMAClose");
 
 out_unmap:
 #ifndef USE_ASE

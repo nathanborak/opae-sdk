@@ -98,7 +98,7 @@ fpga_result MMIORead32Blk(handle_common *dma_h, uint64_t device,
  * handle.
  *
  */
-void _switch_to_ase_page(m2m_dma_handle_t *dma_h, uint64_t addr);
+inline void _switch_to_ase_page(m2m_dma_handle_t *dma_h, uint64_t addr);
 
 /**
  * _read_memory_mmio_unaligned

@@ -65,15 +65,15 @@ static inline fpga_dma_tx_ctrl_t getTxCtrl(uint64_t index, uint64_t max_desc,
 		return tx_ctrl;
 	} else {
 		if ((index == 0) /*first desc*/
-		    && ((tx_ctrl == DMA_TX_GENERATE_SOP)
-			|| (tx_ctrl == DMA_TX_GENERATE_SOP_AND_EOP))) {
-			return DMA_TX_GENERATE_SOP;
+		    && ((tx_ctrl == GENERATE_SOP)
+			|| (tx_ctrl == GENERATE_SOP_AND_EOP))) {
+			return GENERATE_SOP;
 		} else if ((index == (max_desc - 1)) /*last desc*/
-			   && ((tx_ctrl == DMA_TX_GENERATE_EOP)
-			       || (tx_ctrl == DMA_TX_GENERATE_SOP_AND_EOP))) {
-			return DMA_TX_GENERATE_EOP;
+			   && ((tx_ctrl == GENERATE_EOP)
+			       || (tx_ctrl == GENERATE_SOP_AND_EOP))) {
+			return GENERATE_EOP;
 		} else {
-			return DMA_TX_NO_PACKET;
+			return TX_NO_PACKET;
 		}
 	}
 }
@@ -112,13 +112,13 @@ static inline fpga_result _do_dma_tx(m2s_dma_handle_t *dma_h, uint64_t dst,
 	else
 		desc.control.early_done_en = 0;
 
-	if (tx_ctrl == DMA_TX_GENERATE_SOP) {
+	if (tx_ctrl == GENERATE_SOP) {
 		desc.control.generate_sop = 1;
 		desc.control.generate_eop = 0;
-	} else if (tx_ctrl == DMA_TX_GENERATE_SOP_AND_EOP) {
+	} else if (tx_ctrl == GENERATE_SOP_AND_EOP) {
 		desc.control.generate_sop = 1;
 		desc.control.generate_eop = 1;
-	} else if (tx_ctrl == DMA_TX_GENERATE_EOP) {
+	} else if (tx_ctrl == GENERATE_EOP) {
 		desc.control.generate_sop = 0;
 		desc.control.generate_eop = 1;
 	} else {
@@ -152,19 +152,19 @@ void *m2sTransactionWorker(void *dma_handle)
 	while (1) {
 		bool intr_en = false;
 		fpga_dma_transfer_t m2s_transfer;
-		res = fpgaDmaDequeue(&dma_h->header.transferRequestq,
+		res = fpgaDMADequeue(&dma_h->header.transferRequestq,
 				     &m2s_transfer);
 		if (res == FPGA_NO_ACCESS) {
 			// FPGA_DMA_ST_ERR("M2S thread termination");
 			break;
 		}
 		if (res != FPGA_OK) {
-			FPGA_DMA_ST_ERR("fpgaDmaDequeue failed");
+			FPGA_DMA_ST_ERR("fpgaDMADequeue failed");
 			return NULL;
 		}
 		debug_print(
 			"HOST to FPGA --- src_addr = %08lx, dst_addr = %08lx\n",
-			    m2s_transfer.src, m2s_transfer.dst);
+			m2s_transfer.src, m2s_transfer.dst);
 
 		if (!m2s_transfer.small_buffer) {
 			m2s_transfer.num_buffers =
@@ -175,7 +175,7 @@ void *m2sTransactionWorker(void *dma_handle)
 				    (uint32_t)FPGA_DMA_MAX_BUF);
 			m2s_transfer.buffers = (buffer_pool_item **)calloc(
 				m2s_transfer.num_buffers,
-									   sizeof(buffer_pool_item *));
+				sizeof(buffer_pool_item *));
 			uint32_t i;
 			for (i = 0; i < m2s_transfer.num_buffers; i++) {
 				m2s_transfer.buffers[i] =
@@ -220,8 +220,8 @@ void *m2sTransactionWorker(void *dma_handle)
 				   || i == (dma_chunks - 1));
 			bytes_to_transfer = (i == (dma_chunks - 1)
 					     && (count % buffer_size != 0))
-				? count % buffer_size
-				: buffer_size;
+						    ? count % buffer_size
+						    : buffer_size;
 			/*skip interrupt polling for very first interrupt*/
 			if (intr_en && (i > ((uint64_t)half_num_buffers - 1))) {
 				poll_interrupt(&dma_h->header M2S_TW);
@@ -236,9 +236,9 @@ void *m2sTransactionWorker(void *dma_handle)
 				getTxCtrl(i, dma_chunks, m2s_transfer.tx_ctrl);
 			res = _do_dma_tx(
 				dma_h, 0, dma_buf_iova | 0x1000000000000,
-					 bytes_to_transfer, 1,
-					 m2s_transfer.transfer_type, intr_en /*intr_en*/,
-					 tx_desc_ctrl /*tx_ctrl*/);
+				bytes_to_transfer, 1,
+				m2s_transfer.transfer_type, intr_en /*intr_en*/,
+				tx_desc_ctrl /*tx_ctrl*/);
 			ON_ERR_GOTO(res, out,
 				    "HOST_TO_FPGA_ST Transfer failed");
 		}
@@ -247,10 +247,10 @@ void *m2sTransactionWorker(void *dma_handle)
 			poll_interrupt(&dma_h->header M2S_TW2);
 		}
 
-		res = fpgaDmaEnqueue(&dma_h->header.dma_h->transferCompleteq,
+		res = fpgaDMAEnqueue(&dma_h->header.dma_h->transferCompleteq,
 				     &m2s_transfer);
 		if (res != FPGA_OK) {
-			FPGA_DMA_ST_ERR("fpgaDmaEnqueue failed");
+			FPGA_DMA_ST_ERR("fpgaDMAEnqueue failed");
 			return NULL;
 		}
 	}
