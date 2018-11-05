@@ -240,11 +240,6 @@ typedef struct _buffer_pool {
 	uint64_t dma_buf_iova;
 } buffer_pool_item;
 
-// Channel status
-typedef enum {
-	TRANSFER_IN_PROGRESS = 0,
-	TRANSFER_NOT_IN_PROGRESS = 1
-} fpga_transf_status_t;
 
 typedef struct _fpga_dma_transfer {
 	sem_pool_item *tf_semaphore;
@@ -264,28 +259,6 @@ typedef struct _fpga_dma_transfer {
 	buffer_pool_item **buffers;
 	buffer_pool_item *small_buffer;
 } fpga_dma_transfer_t;
-
-#pragma pack(push, 1)
-typedef struct {
-	uint64_t dfh;
-	uint64_t feature_uuid_lo;
-	uint64_t feature_uuid_hi;
-} dfh_feature_t;
-#pragma pack(pop)
-
-typedef union {
-	uint64_t reg;
-	struct {
-		uint64_t feature_type : 4;
-		uint64_t reserved_8 : 8;
-		uint64_t afu_minor : 4;
-		uint64_t reserved_7 : 7;
-		uint64_t end_dfh : 1;
-		uint64_t next_dfh : 24;
-		uint64_t afu_major : 4;
-		uint64_t feature_id : 12;
-	} bits;
-} dfh_reg_t;
 
 typedef struct qinfo {
 	int read_index;

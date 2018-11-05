@@ -135,7 +135,7 @@ static inline fpga_result _do_dma_rx(s2m_dma_handle_t *dma_h, uint64_t dst,
 	else
 		desc.control.early_done_en = 0;
 
-	if (rx_ctrl == END_ON_EOP) {
+	if (rx_ctrl == DMA_RX_END_ON_EOP) {
 		desc.control.end_on_eop = 1;
 		desc.control.eop_rvcd_irq_en = 1;
 		desc.control.wait_for_wr_rsp = 1;
@@ -257,7 +257,7 @@ void *s2mTransactionWorker(void *dma_handle)
 		dma_chunks = count / FPGA_DMA_BUF_SIZE;
 		// calculate unaligned leftover bytes to be transferred
 		count -= (dma_chunks * FPGA_DMA_BUF_SIZE);
-		if (s2m_transfer.rx_ctrl == END_ON_EOP) {
+		if (s2m_transfer.rx_ctrl == DMA_RX_END_ON_EOP) {
 			// Set to indicate transfer type. Streaming valve will
 			// stop accepting data after EOP has arrived.
 			ctrl.ct.en_non_det_tf = 1;

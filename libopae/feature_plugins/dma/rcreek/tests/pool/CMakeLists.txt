@@ -36,7 +36,7 @@ add_executable(pool_test
                pool_test.c)
 
 set_install_rpath(pool_test)
-target_link_libraries(pool_test opae-c fpga_dma_lib)
+target_link_libraries(pool_test opae-c fpga_dma_lib uuid)
 set_property(TARGET pool_test PROPERTY C_STANDARD 99)
 
 install(TARGETS pool_test

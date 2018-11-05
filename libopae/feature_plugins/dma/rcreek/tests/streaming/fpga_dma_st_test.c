@@ -73,10 +73,12 @@ void do_mm_test(fpga_handle afc_h, uint32_t channel, uint32_t use_ase);
 			goto label;                                            \
 		}                                                              \
 	} while (0)
+
+
 int sendrxTransfer(fpga_dma_channel_handle dma_h, fpga_dma_transfer rx_transfer,
 		   uint64_t src, uint64_t dst, uint64_t tf_len,
 		   fpga_dma_transfer_type_t tf_type, fpga_dma_rx_ctrl_t rx_ctrl,
-		   fpga_dma_transfer_cb cb, int attr_reset)
+		   fpga_dma_async_tx_cb cb, int attr_reset)
 {
 	fpga_result res = FPGA_OK;
 	if (attr_reset)
@@ -94,7 +96,7 @@ int sendrxTransfer(fpga_dma_channel_handle dma_h, fpga_dma_transfer rx_transfer,
 int sendtxTransfer(fpga_dma_channel_handle dma_h, fpga_dma_transfer tx_transfer,
 		   uint64_t src, uint64_t dst, uint64_t tf_len,
 		   fpga_dma_transfer_type_t tf_type, fpga_dma_tx_ctrl_t tx_ctrl,
-		   fpga_dma_transfer_cb cb, int attr_reset)
+		   fpga_dma_async_tx_cb cb, int attr_reset)
 {
 	fpga_result res = FPGA_OK;
 	if (attr_reset)
@@ -201,6 +203,8 @@ fpga_result run_bw_test(fpga_handle afc_h, fpga_dma_channel_handle dma_m2s_h,
 	struct timespec start, end;
 	uint64_t *dma_tx_buf_ptr;
 	uint64_t *dma_rx_buf_ptr;
+	dma_tx_buf_ptr = NULL;
+	dma_rx_buf_ptr = NULL;
 
 	ssize_t total_mem_size = (uint64_t)(4 * 1024) * (uint64_t)(1024 * 1024);
 
@@ -231,7 +235,7 @@ fpga_result run_bw_test(fpga_handle afc_h, fpga_dma_channel_handle dma_m2s_h,
 	clock_gettime(CLOCK_MONOTONIC, &start);
 	res = sendtxTransfer(dma_m2s_h, tx_transfer, (uint64_t)dma_tx_buf_ptr,
 			     0, total_mem_size, HOST_MM_TO_FPGA_ST,
-			     TX_NO_PACKET, txtransferComplete,
+			     DMA_TX_NO_PACKET, txtransferComplete,
 			     1 /*reset transfer attributes*/);
 	if (res != FPGA_OK) {
 		printf(" sendtxTransfer Host to FPGA failed with error %s",
@@ -261,7 +265,7 @@ fpga_result run_bw_test(fpga_handle afc_h, fpga_dma_channel_handle dma_m2s_h,
 	clock_gettime(CLOCK_MONOTONIC, &start);
 	res = sendrxTransfer(
 		dma_s2m_h, rx_transfer, 0, (uint64_t)dma_rx_buf_ptr,
-		total_mem_size, FPGA_ST_TO_HOST_MM, RX_NO_PACKET,
+		total_mem_size, FPGA_ST_TO_HOST_MM, DMA_RX_NO_PACKET,
 		rxtransferComplete, 1 /*reset transfer attributes*/);
 	if (res != FPGA_OK) {
 		printf(" sendrxTransfer FPGA to Host failed with error %s",
@@ -446,8 +450,8 @@ int main(int argc, char *argv[])
 	}
 	printf("No of DMA channels = %08x\n", count);
 
-	fpga_dma_channel_desc *descs = (fpga_dma_channel_desc *)malloc(
-		sizeof(fpga_dma_channel_desc) * count);
+	fpga_dma_channel *descs = (fpga_dma_channel *)malloc(
+		sizeof(fpga_dma_channel) * count);
 	res = fpgaDMAEnumerateChannels(dma_handle, count, descs, &count);
 	ON_ERR_GOTO(res, free_descs, "fpgaDMAEnumerateChannels");
 
@@ -461,13 +465,13 @@ int main(int argc, char *argv[])
 	uint32_t mm_index = 0xffffffff;
 	for (k = 0; k < count; k++) {
 		assert(k == descs[k].index);
-		if (descs[k].ch_type == TX_ST) {
+		if (descs[k].ch_type == DMA_TX_ST) {
 			tx_index = descs[k].index;
 		}
-		if (descs[k].ch_type == RX_ST) {
+		if (descs[k].ch_type == DMA_RX_ST) {
 			rx_index = descs[k].index;
 		}
-		if (descs[k].ch_type == MM) {
+		if (descs[k].ch_type == DMA_MM) {
 			mm_index = descs[k].index;
 		}
 	}
@@ -518,7 +522,7 @@ int main(int argc, char *argv[])
 
 	res = sendtxTransfer(
 		dma_h[tx_index], tx_transfer, (uint64_t)dma_tx_buf_ptr, 0,
-		transfer_len, HOST_MM_TO_FPGA_ST, TX_NO_PACKET,
+		transfer_len, HOST_MM_TO_FPGA_ST, DMA_TX_NO_PACKET,
 		txtransferComplete, 1 /*reset transfer attributes*/);
 	ON_ERR_GOTO(res, free_descs, "sendtxTransfer");
 
@@ -538,7 +542,7 @@ int main(int argc, char *argv[])
 
 	res = sendtxTransfer(
 		dma_h[tx_index], tx_transfer, (uint64_t)dma_tx_buf_ptr, 0,
-		transfer_len, HOST_MM_TO_FPGA_ST, GENERATE_EOP,
+		transfer_len, HOST_MM_TO_FPGA_ST, DMA_TX_GENERATE_EOP,
 		txtransferComplete, 1 /*reset transfer attributes*/);
 	ON_ERR_GOTO(res, out_dma_close, "sendtxTransfer");
 
@@ -560,7 +564,7 @@ int main(int argc, char *argv[])
 
 	res = sendrxTransfer(
 		dma_h[rx_index], rx_transfer, 0, (uint64_t)dma_rx_buf_ptr,
-		transfer_len, FPGA_ST_TO_HOST_MM, RX_NO_PACKET,
+		transfer_len, FPGA_ST_TO_HOST_MM, DMA_RX_NO_PACKET,
 		rxtransferComplete, 1 /*reset transfer attributes*/);
 	ON_ERR_GOTO(res, out_dma_close, "sendrxTransfer");
 
@@ -589,7 +593,7 @@ int main(int argc, char *argv[])
 
 	res = sendrxTransfer(dma_h[rx_index], rx_transfer, 0,
 			     (uint64_t)dma_rx_buf_ptr, transfer_len,
-			     FPGA_ST_TO_HOST_MM, END_ON_EOP, rxtransferComplete,
+			     FPGA_ST_TO_HOST_MM, DMA_RX_END_ON_EOP, rxtransferComplete,
 			     1 /*reset transfer attributes*/);
 	ON_ERR_GOTO(res, out_dma_close, "sendrxTransfer");
 

@@ -42,32 +42,32 @@
 extern "C" {
 #endif
 
-fpga_result fpgaDmaOpen(fpga_handle fpga,
+fpga_result fpgaDMAOpen(fpga_handle fpga,
 			fpga_dma_handle *dma);
 
 /**
  * Close a previously opened DMA object
  *
- * Relinquishes ownership of a previously fpgaDmaOpen()ed resource. This enables
+ * Relinquishes ownership of a previously fpgaDMAOpen()ed resource. This enables
  * others to acquire ownership if the resource was opened exclusively.
  *
  * @param[in]   dma_handle  Handle to previously opened DMA object
  * @returns FPGA_OK on success.
  */
-fpga_result fpgaDmaClose(fpga_dma_handle *dma_handle);
+fpga_result fpgaDMAClose(fpga_dma_handle *dma_handle);
 
 /**
  * Start a blocking transfer.
  *
  * Start a sync transfer and return only all the data was copied.
  *
- * @param[in]   dma_handle      as populated by fpgaDmaOpen()
+ * @param[in]   dma_handle      as populated by fpgaDMAOpen()
  * @param[in]   dma_xfer        encapsulation of all the information about the transfer
- *                              as populated by fpgaDmaTransferInit and set by fpgaDmaTransferSet functions
+ *                              as populated by fpgaDMATransferInit and set by fpgaDMATransferSet functions
  *
  * @returns FPGA_OK on success.
  */
-fpga_result fpgaDmaTransferSync(fpga_dma_handle dma_handle,
+fpga_result fpgaDMATransferSync(fpga_dma_handle dma_handle,
 				fpga_dma_transfer dma_xfer);
 
 /**
@@ -76,13 +76,13 @@ fpga_result fpgaDmaTransferSync(fpga_dma_handle dma_handle,
  * Start an Async transfer (Return immediately)
  * User can poll the dma_handle fd to discover when all the data was copied.
  *
- * @param[in]   dma_handle      as populated by fpgaDmaOpen()
+ * @param[in]   dma_handle      as populated by fpgaDMAOpen()
  * @param[in]   dma_xfer        encapsulation of all the information about the transfer
- *                              as populated by fpgaDmaTransferInit and set by fpgaDmaTransferSet functions
+ *                              as populated by fpgaDMATransferInit and set by fpgaDMATransferSet functions
  *
  * @returns FPGA_OK on success.
  */
-fpga_result fpgaDmaTransferPoll(fpga_dma_handle dma_handle, fpga_dma_transfer dma_xfer);
+fpga_result fpgaDMATransferPoll(fpga_dma_handle dma_handle, fpga_dma_transfer dma_xfer);
 
 /**
  * Start a none blocking transfer (callback).
@@ -90,15 +90,15 @@ fpga_result fpgaDmaTransferPoll(fpga_dma_handle dma_handle, fpga_dma_transfer dm
  * Start an Async transfer (Return immediately)
  * Callback will be invoke when the transfer is completed.
  *
- * @param[in]   dma_handle      as populated by fpgaDmaOpen()
+ * @param[in]   dma_handle      as populated by fpgaDMAOpen()
  * @param[in]   dma_xfer        encapsulation of all the information about the transfer
- *                              as populated by fpgaDmaTransferInit and set by fpgaDmaTransferSet functions
+ *                              as populated by fpgaDMATransferInit and set by fpgaDMATransferSet functions
  * @param[in]   cb              Function to call when the transfer is completed
  * @param[in]   context         value to pass to the callback function
  *
  * @returns FPGA_OK on success.
  */
-fpga_result fpgaDmaTransferCB(fpga_dma_handle dma,
+fpga_result fpgaDMATransferCB(fpga_dma_handle dma,
 			      fpga_dma_transfer dma_xfer,
 			      fpga_dma_async_tx_cb cb,
 			      void *context);
@@ -106,12 +106,12 @@ fpga_result fpgaDmaTransferCB(fpga_dma_handle dma,
 /**
  * Post a buffer for Rx streaming
  *
- * @param[in]   dma_handle      as populated by fpgaDmaOpen()
+ * @param[in]   dma_handle      as populated by fpgaDMAOpen()
  * @param[in]   dma_xfer        encapsulation of all the information about the buffer
  *
  * @returns FPGA_OK on success.
  */
-fpga_result fpgaDmaPostBuffer(fpga_dma_handle dma,
+fpga_result fpgaDMAPostBuffer(fpga_dma_handle dma,
 			      fpga_dma_transfer *rx_stream_info);
 
 /**
@@ -119,26 +119,26 @@ fpga_result fpgaDmaPostBuffer(fpga_dma_handle dma,
  *
  * This call allows the user to query the FPGA for DMA channel resources.
  *
- * fpgaDmaEnumerateChannels() will create a number of `fpga_dma_channel_desc`s
+ * fpgaDMAEnumerateChannels() will create a number of `fpga_dma_channel_desc`s
  * describing available DMA channel resources and populate the array
  * `descriptors`. The `max_descriptors` argument can be used to
  * limit the number of descriptors allocated/returned by
- * fpgaDmaEnumerateChannels(); i.e., the number of descriptors in the returned
+ * fpgaDMAEnumerateChannels(); i.e., the number of descriptors in the returned
  * `descriptors` array will be either `max_descriptors` or `num_descriptors`
  * (the number of resources available), whichever is smaller.
  *
  * To query the number of resources available (e.g. to allocate a `descriptors`
- * array of the appropriate size), call fpgaDmaEnumerateChannels() with the
+ * array of the appropriate size), call fpgaDMAEnumerateChannels() with the
  * parameter `descriptors` set to NULL; this will only return the number of
  * matches in `num_descriptors`.
  *
  * @param[in] fpga              Handle to the FPGA AFU object obtained via fpgaOpen().
- * @param[in] max_descriptors   Maximum number of tokens that fpgaDmaEnumerateChannels()
+ * @param[in] max_descriptors   Maximum number of tokens that fpgaDMAEnumerateChannels()
  *                              shall return (length of `descriptors` array). There may
  *                              be more or fewer matches than this number; `num_descriptors`
  *                              is set to the number of actual matches.
  * @param[out] descriptors      Pointer to an array of fpga_dma_channel_desc structures to be
- *                              populated.  If NULL is supplied, fpgaDmaEnumerateChannels()
+ *                              populated.  If NULL is supplied, fpgaDMAEnumerateChannels()
  *                              will not create any descriptors, but it will return the
  *                              number of resources in `num_descriptors`.
  * @param[out] num_descriptors  Number of resources available. This number can be higher
@@ -152,38 +152,38 @@ fpga_result fpgaDmaPostBuffer(fpga_dma_handle dma,
  *                              driver.
  */
 /* clang-format on */
-fpga_result fpgaDmaEnumerateChannels(fpga_dma_handle dma_ch,
+fpga_result fpgaDMAEnumerateChannels(fpga_dma_handle dma_ch,
 				     uint32_t max_descriptors,
 				     fpga_dma_channel *descriptors,
 				     uint32_t *num_descriptors);
 
 /**
- * fpgaDmaOpenChannel
+ * fpgaDMAOpenChannel
  *
  * @brief                      Open DMA channel handle
  *
  * @param[in]  dma_h           Handle to the DMA object obtained via
- *                             fpgaDmaOpen()
+ *                             fpgaDMAOpen()
  * @param[in]  dma_channel_idx Index of the DMA channel that must be opened
  * @param[out] dma             DMA object handle
  * @returns                    FPGA_OK on success, return code otherwise
  */
-fpga_result fpgaDmaOpenChannel(fpga_dma_handle dma_h,
+fpga_result fpgaDMAOpenChannel(fpga_dma_handle dma_h,
 			       uint64_t dma_channel_idx,
 			       fpga_dma_channel_handle *dma_ch);
 
 /**
- * fpgaDmaCloseChannel
+ * fpgaDMACloseChannel
  *
  * @brief                  Close DMA channel handle
  *
  * @param[in]  dma         DMA channel handle
  * @returns                FPGA_OK on success, return code otherwise
  */
-fpga_result fpgaDmaCloseChannel(fpga_dma_channel_handle *dma);
+fpga_result fpgaDMACloseChannel(fpga_dma_channel_handle *dma);
 
 /**
- * fpgaDmaGetChannelType
+ * fpgaDMAGetChannelType
  *
  * @brief                  Query DMA channel type
  *
@@ -194,11 +194,11 @@ fpga_result fpgaDmaCloseChannel(fpga_dma_channel_handle *dma);
  * @param[out] ch_type     Pointer to channel type
  * @returns                FPGA_OK on success, return code otherwise
  */
-fpga_result fpgaDmaGetChannelType(fpga_dma_channel_handle dma,
+fpga_result fpgaDMAGetChannelType(fpga_dma_channel_handle dma,
 				  fpga_dma_channel_type_t *ch_type);
 
 /**
- * fpgaDmaTransferInit
+ * fpgaDMATransferInit
  *
  * @brief                  Initialize an object that represents the DMA
  * transfer.
@@ -209,11 +209,11 @@ fpga_result fpgaDmaGetChannelType(fpga_dma_channel_handle dma,
  * @param[out]  transfer   Pointer to transfer attribute struct
  * @returns                FPGA_OK on success, return code otherwise
  */
-fpga_result fpgaDmaTransferInit(fpga_dma_channel_handle dma,
+fpga_result fpgaDMATransferInit(fpga_dma_channel_handle dma,
 				fpga_dma_transfer *transfer);
 
 /**
- * fpgaDmaTransferReset
+ * fpgaDMATransferReset
  *
  * @brief                  Reset DMA transfer attribute object to default
  * values.
@@ -224,23 +224,23 @@ fpga_result fpgaDmaTransferInit(fpga_dma_channel_handle dma,
  * @param[in]  transfer    Pointer to transfer attribute struct
  * @returns                FPGA_OK on success, return code otherwise
  */
-fpga_result fpgaDmaTransferReset(fpga_dma_channel_handle dma,
+fpga_result fpgaDMATransferReset(fpga_dma_channel_handle dma,
 				 fpga_dma_transfer transfer);
 
 /**
- * fpgaDmaTransferDestroy
+ * fpgaDMATransferDestroy
  *
  * @brief                 Destroy DMA transfer attribute object.
  *
  * @param[in]  transfer   Pointer to transfer attribute struct
  * @returns               FPGA_OK on success, return code otherwise
  */
-fpga_result fpgaDmaTransferDestroy(fpga_dma_channel_handle dma,
+fpga_result fpgaDMATransferDestroy(fpga_dma_channel_handle dma,
 				   fpga_dma_transfer *transfer);
 
 
 /**
- * fpgaDmaTransferSetSrc
+ * fpgaDMATransferSetSrc
  *
  * @brief                  Set source address of the transfer
  *
@@ -249,11 +249,11 @@ fpga_result fpgaDmaTransferDestroy(fpga_dma_channel_handle dma,
 
  * @returns                FPGA_OK on success, return code otherwise
  */
-fpga_result fpgaDmaTransferSetSrc(fpga_dma_transfer transfer,
+fpga_result fpgaDMATransferSetSrc(fpga_dma_transfer transfer,
 				  uint64_t src);
 
 /**
- * fpgaDmaTransferSetDst
+ * fpgaDMATransferSetDst
  *
  * @brief                  Set destination address of the transfer
  *
@@ -262,11 +262,11 @@ fpga_result fpgaDmaTransferSetSrc(fpga_dma_transfer transfer,
 
  * @returns                FPGA_OK on success, return code otherwise
  */
-fpga_result fpgaDmaTransferSetDst(fpga_dma_transfer transfer,
+fpga_result fpgaDMATransferSetDst(fpga_dma_transfer transfer,
 				  uint64_t dst);
 
 /**
- * fpgaDmaTransferSetLen
+ * fpgaDMATransferSetLen
  *
  * @brief                  Set transfer length in bytes
  *
@@ -275,11 +275,11 @@ fpga_result fpgaDmaTransferSetDst(fpga_dma_transfer transfer,
 
  * @returns                FPGA_OK on success, return code otherwise
  */
-fpga_result fpgaDmaTransferSetLen(fpga_dma_transfer transfer,
+fpga_result fpgaDMATransferSetLen(fpga_dma_transfer transfer,
 				  uint64_t len);
 
 /**
- * fpgaDmaTransferSetTransferType
+ * fpgaDMATransferSetTransferType
  *
  * @brief                  Set transfer type
  *
@@ -296,12 +296,11 @@ fpga_result fpgaDmaTransferSetLen(fpga_dma_transfer transfer,
 
  * @returns                FPGA_OK on success, return code otherwise
  */
-fpga_result
-fpgaDmaTransferSetTransferType(fpga_dma_transfer transfer,
-			       fpga_dma_transfer_type_t type);
+fpga_result fpgaDMATransferSetTransferType(fpga_dma_transfer transfer,
+					   fpga_dma_transfer_type_t type);
 
 /**
- * fpgaDmaTransferSetTxControl
+ * fpgaDMATransferSetTxControl
  *
  * @brief                  Set TX control
  *
@@ -324,11 +323,11 @@ fpgaDmaTransferSetTransferType(fpga_dma_transfer transfer,
 
  * @returns                FPGA_OK on success, return code otherwise
  */
-fpga_result fpgaDmaTransferSetTxControl(fpga_dma_transfer transfer,
+fpga_result fpgaDMATransferSetTxControl(fpga_dma_transfer transfer,
 					fpga_dma_tx_ctrl_t tx_ctrl);
 
 /**
- * fpgaDmaTransferSetRxControl
+ * fpgaDMATransferSetRxControl
  *
  * @brief                  Set RX control
  *
@@ -352,18 +351,18 @@ fpga_result fpgaDmaTransferSetTxControl(fpga_dma_transfer transfer,
 
  * @returns                FPGA_OK on success, return code otherwise
  */
-fpga_result fpgaDmaTransferSetRxControl(fpga_dma_transfer transfer,
+fpga_result fpgaDMATransferSetRxControl(fpga_dma_transfer transfer,
 					fpga_dma_rx_ctrl_t rx_ctrl);
 
 /**
- * fpgaDmaTransferSetTransferCallback
+ * fpgaDMATransferSetTransferCallback
  *
  * @brief                  Register callback for notification on asynchronous
  *                         transfer completion
- *                         If a callback is specified, fpgaDmaTransfer
+ *                         If a callback is specified, fpgaDMATransfer
  *                         returns immediately (asynchronous transfer).
  *
- *                         If a callback is not specified, fpgaDmaTransfer
+ *                         If a callback is not specified, fpgaDMATransfer
  *                         returns after the transfer is complete (synchronous/
  *                         blocking transfer).
  *
@@ -374,12 +373,12 @@ fpga_result fpgaDmaTransferSetRxControl(fpga_dma_transfer transfer,
  * @param[in]  ctxt        Callback context
  * @returns                FPGA_OK on success, return code otherwise
  */
-fpga_result fpgaDmaTransferSetTransferCallback(fpga_dma_transfer transfer,
+fpga_result fpgaDMATransferSetTransferCallback(fpga_dma_transfer transfer,
 					       fpga_dma_async_tx_cb cb,
 					       void *ctxt);
 
 /**
- * fpgaDmaTransferGetBytesTransferred
+ * fpgaDMATransferGetBytesTransferred
  *
  * @brief                  Retrieve number of bytes completed by RX DMA
  *
@@ -394,11 +393,11 @@ fpga_result fpgaDmaTransferSetTransferCallback(fpga_dma_transfer transfer,
  *
  * @returns                FPGA_OK on success, return code otherwise
  */
-fpga_result fpgaDmaTransferGetBytesTransferred(fpga_dma_transfer transfer,
+fpga_result fpgaDMATransferGetBytesTransferred(fpga_dma_transfer transfer,
 					       size_t *rx_bytes);
 
 /**
- * fpgaDmaTransferCheckEopArrived
+ * fpgaDMATransferCheckEopArrived
  *
  * @brief                  Retrieve EOP status
  *
@@ -411,11 +410,11 @@ fpga_result fpgaDmaTransferGetBytesTransferred(fpga_dma_transfer transfer,
  *
  * @returns                FPGA_OK on success, return code otherwise
  */
-fpga_result fpgaDmaTransferCheckEopArrived(fpga_dma_transfer transfer,
+fpga_result fpgaDMATransferCheckEopArrived(fpga_dma_transfer transfer,
 					   bool *eop_arrived);
 
 /**
- * fpgaDmaTransfer
+ * fpgaDMATransfer
  *
  * @brief                  Perform a DMA transfer
  *
@@ -424,11 +423,11 @@ fpga_result fpgaDmaTransferCheckEopArrived(fpga_dma_transfer transfer,
  *
  * @returns                FPGA_OK on success, return code otherwise
  */
-fpga_result fpgaDmaTransferStart(fpga_dma_channel_handle dma,
+fpga_result fpgaDMATransferStart(fpga_dma_channel_handle dma,
 				 const fpga_dma_transfer transfer);
 
 /**
- * fpgaDmaTransferInitSmall
+ * fpgaDMATransferInitSmall
  *
  * @brief                  Initialize an object that represents the DMA
  *                         transfer.
@@ -444,8 +443,8 @@ fpga_result fpgaDmaTransferStart(fpga_dma_channel_handle dma,
  *
  * The intended use is to provide an application with a high-speed DMA option
  * aimed at "small" transfers.  The number of small transfers is limited to
- * four 2MB buffers - that is, calling fpgaDmaTransferInitSmall five times
- * without an intervening fpgaDmaTransferDestroy will fail with FPGA_NO_MEMORY.
+ * four 2MB buffers - that is, calling fpgaDMATransferInitSmall five times
+ * without an intervening fpgaDMATransferDestroy will fail with FPGA_NO_MEMORY.
  *
  * Note that the application can sub-partition this buffer at will, and manage
  * it however they wish.
@@ -462,7 +461,7 @@ fpga_result fpgaDmaTransferStart(fpga_dma_channel_handle dma,
  * @param[out]  transfer   Pointer to transfer attribute struct
  * @returns                FPGA_OK on success, return code otherwise
  */
-fpga_result fpgaDmaTransferInitSmall(fpga_dma_channel_handle dma,
+fpga_result fpgaDMATransferInitSmall(fpga_dma_channel_handle dma,
 				     uint64_t *size,
 				     void **buf_ptr,
 				     fpga_dma_transfer *transfer);

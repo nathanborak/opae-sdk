@@ -41,7 +41,6 @@
 #include <opae/access.h>
 #include <opae/buffer.h>
 #include <opae/enum.h>
-#include <opae/dma.h>
 #include <opae/event.h>
 #include <opae/manage.h>
 #include <opae/mmio.h>
@@ -52,6 +51,7 @@
 #include <opae/version.h>
 #include <opae/sysobject.h>
 #include <opae/userclk.h>
+#include <opae/feature.h>
 #include <opae/dma.h>
 
 #endif // __FPGA_FPGA_H__

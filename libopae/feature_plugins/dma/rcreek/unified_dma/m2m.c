@@ -115,8 +115,8 @@ static fpga_result _do_dma(m2m_dma_handle_t *dma_h, uint64_t dst, uint64_t src,
 		// need to determine if the CCIP (host) address is aligned to
 		// 4CL (256B).  When 0 the CCIP address is aligned.
 		alignment_offset = (type == HOST_TO_FPGA_MM)
-					   ? (src % (4 * FPGA_DMA_ALIGN_BYTES))
-					   : (dst % (4 * FPGA_DMA_ALIGN_BYTES));
+			? (src % (4 * FPGA_DMA_ALIGN_BYTES))
+			: (dst % (4 * FPGA_DMA_ALIGN_BYTES));
 
 		// not aligned to 4CL so performing a short transfer to get
 		// aligned
@@ -135,18 +135,18 @@ static fpga_result _do_dma(m2m_dma_handle_t *dma_h, uint64_t dst, uint64_t src,
 			    >= count) {
 				segment_size = count;
 				count = 0; // only had to transfer count amount
-					   // of data to reach the end of the
-					   // provided buffer
+				// of data to reach the end of the
+				// provided buffer
 			} else {
 				segment_size = (4 * FPGA_DMA_ALIGN_BYTES)
-					       - alignment_offset;
+					- alignment_offset;
 				src += segment_size;
 				dst += segment_size;
 				count -= segment_size; // subtract the segment
-						       // size from count since
-						       // the transfer below
-						       // will bring us into 4CL
-						       // alignment
+				// size from count since
+				// the transfer below
+				// will bring us into 4CL
+				// alignment
 				desc.control.transfer_irq_en = 0;
 			}
 
@@ -174,7 +174,7 @@ static fpga_result _do_dma(m2m_dma_handle_t *dma_h, uint64_t dst, uint64_t src,
 			if ((count % (4 * FPGA_DMA_ALIGN_BYTES)) == 0) {
 				segment_size = count;
 				count = 0; // transfer below will move the
-					   // remainder of the buffer
+				// remainder of the buffer
 			}
 			// buffers do not end on 4CL boundary so transfer only
 			// up to the last 4CL boundary leaving a segment at the
@@ -266,7 +266,7 @@ static fpga_result transferHostToFpga(m2m_dma_handle_t *dma_h,
 			return res;
 		} else {
 			aligned_addr = ((dst / FPGA_DMA_ALIGN_BYTES) + 1)
-				       * FPGA_DMA_ALIGN_BYTES;
+				* FPGA_DMA_ALIGN_BYTES;
 			align_bytes = aligned_addr - dst;
 			res = _ase_host_to_fpga(dma_h, &dst, &src, align_bytes);
 			ON_ERR_GOTO(res, out,
@@ -294,7 +294,7 @@ static fpga_result transferHostToFpga(m2m_dma_handle_t *dma_h,
 
 		res = _do_dma(dma_h, dst,
 			      (p_sbp->dma_buf_iova + offset)
-				      | FPGA_DMA_HOST_MASK,
+			      | FPGA_DMA_HOST_MASK,
 			      m2m_transfer->len, 1, type, true);
 
 		poll_interrupt(&dma_h->header XFER_H2F2);
@@ -315,7 +315,7 @@ static fpga_result transferHostToFpga(m2m_dma_handle_t *dma_h,
 			    dma_chunks, count_left, dst, src);
 
 		uint64_t dma_last_chunk = (count_left / FPGA_DMA_ALIGN_BYTES)
-					  * FPGA_DMA_ALIGN_BYTES;
+			* FPGA_DMA_ALIGN_BYTES;
 		count_left -= dma_last_chunk;
 		if (dma_last_chunk) {
 			dma_chunks++;
@@ -338,16 +338,16 @@ static fpga_result transferHostToFpga(m2m_dma_handle_t *dma_h,
 				local_memcpy(dma_buf_ptr,
 					     (void *)(src + i * buffer_size),
 					     (i == (dma_chunks - 1))
-						     ? dma_last_chunk
-						     : buffer_size);
+					     ? dma_last_chunk
+					     : buffer_size);
 			}
 			if ((ping_pong
 			     && ((i % (uint64_t)half_num_buffers
 				  == ((uint64_t)half_num_buffers - 1))))
 			    || (i == (dma_chunks - 1)) /*last descriptor */) {
 				uint64_t siz_last = (i == (dma_chunks - 1))
-							    ? dma_last_chunk
-							    : buffer_size;
+					? dma_last_chunk
+					: buffer_size;
 				if (i == ((uint64_t)half_num_buffers - 1)) {
 					res = _do_dma(dma_h,
 						      (dst + i * buffer_size),
@@ -357,7 +357,7 @@ static fpga_result transferHostToFpga(m2m_dma_handle_t *dma_h,
 					if (issued_intr)
 						poll_interrupt(
 							&dma_h->header
-								 XFER_H2F);
+							       XFER_H2F);
 					res = _do_dma(dma_h,
 						      (dst + i * buffer_size),
 						      dma_buf_iova, siz_last, 1,
@@ -381,16 +381,16 @@ static fpga_result transferHostToFpga(m2m_dma_handle_t *dma_h,
 			assert(dma_tx_bytes == 0);
 			if (count_left) {
 				dst = dst + dma_chunks * buffer_size
-				      + dma_tx_bytes
-				      - (buffer_size - dma_last_chunk);
+					+ dma_tx_bytes
+					- (buffer_size - dma_last_chunk);
 				src = src + dma_chunks * buffer_size
-				      + dma_tx_bytes
-				      - (buffer_size - dma_last_chunk);
+					+ dma_tx_bytes
+					- (buffer_size - dma_last_chunk);
 				res = _ase_host_to_fpga(dma_h, &dst, &src,
 							count_left);
 				ON_ERR_GOTO(
 					res, out,
-					"HOST_TO_FPGA_MM Transfer failed\n");
+					    "HOST_TO_FPGA_MM Transfer failed\n");
 				fflush(stdout);
 			}
 		}
@@ -425,7 +425,7 @@ static fpga_result transferFpgaToHost(m2m_dma_handle_t *dma_h,
 			return res;
 		} else {
 			aligned_addr = ((src / FPGA_DMA_ALIGN_BYTES) + 1)
-				       * FPGA_DMA_ALIGN_BYTES;
+				* FPGA_DMA_ALIGN_BYTES;
 			align_bytes = aligned_addr - src;
 			res = _ase_fpga_to_host(dma_h, &src, &dst, align_bytes);
 			ON_ERR_GOTO(res, out,
@@ -453,7 +453,7 @@ static fpga_result transferFpgaToHost(m2m_dma_handle_t *dma_h,
 
 		res = _do_dma(dma_h,
 			      (p_sbp->dma_buf_iova + offset)
-				      | FPGA_DMA_HOST_MASK,
+			      | FPGA_DMA_HOST_MASK,
 			      src, m2m_transfer->len, 1, type, true);
 
 		res = _issue_magic(dma_h);
@@ -478,7 +478,7 @@ static fpga_result transferFpgaToHost(m2m_dma_handle_t *dma_h,
 		uint64_t pending_buf = 0;
 
 		uint64_t dma_last_chunk = (count_left / FPGA_DMA_ALIGN_BYTES)
-					  * FPGA_DMA_ALIGN_BYTES;
+			* FPGA_DMA_ALIGN_BYTES;
 		count_left -= dma_last_chunk;
 		if (dma_last_chunk) {
 			dma_chunks++;
@@ -497,8 +497,8 @@ static fpga_result transferFpgaToHost(m2m_dma_handle_t *dma_h,
 				| FPGA_DMA_HOST_MASK;
 
 			uint64_t siz_last = (i == (dma_chunks - 1))
-						    ? dma_last_chunk
-						    : buffer_size;
+				? dma_last_chunk
+				: buffer_size;
 			res = _do_dma(dma_h, dma_buf_iova,
 				      (src + i * buffer_size), siz_last, 1,
 				      type, false /*intr_en */);
@@ -527,11 +527,11 @@ static fpga_result transferFpgaToHost(m2m_dma_handle_t *dma_h,
 							local_memcpy(
 								(void *)(dst
 									 + pending_buf
-										   * buffer_size),
-								buffers[pending_buf
-									% num_buffers]
-									->dma_buf_ptr,
-								buffer_size);
+									 * buffer_size),
+								     buffers[pending_buf
+									     % num_buffers]
+								     ->dma_buf_ptr,
+								     buffer_size);
 						}
 						pending_buf++;
 					}
@@ -550,16 +550,16 @@ static fpga_result transferFpgaToHost(m2m_dma_handle_t *dma_h,
 		// clear out final dma memcpy operations
 		while (pending_buf < dma_chunks) {
 			uint64_t siz_last = (pending_buf == (dma_chunks - 1))
-						    ? dma_last_chunk
-						    : buffer_size;
+				? dma_last_chunk
+				: buffer_size;
 
 			if (do_memcpy) {
 				local_memcpy(
 					(void *)(dst
 						 + pending_buf * buffer_size),
-					buffers[pending_buf % (num_buffers)]
-						->dma_buf_ptr,
-					siz_last);
+					     buffers[pending_buf % (num_buffers)]
+					     ->dma_buf_ptr,
+					     siz_last);
 			}
 			pending_buf++;
 		}
@@ -572,11 +572,11 @@ static fpga_result transferFpgaToHost(m2m_dma_handle_t *dma_h,
 
 			if (count_left) {
 				dst = dst + dma_chunks * buffer_size
-				      + dma_tx_bytes
-				      - (buffer_size - dma_last_chunk);
+					+ dma_tx_bytes
+					- (buffer_size - dma_last_chunk);
 				src = src + dma_chunks * buffer_size
-				      + dma_tx_bytes
-				      - (buffer_size - dma_last_chunk);
+					+ dma_tx_bytes
+					- (buffer_size - dma_last_chunk);
 				res = _ase_fpga_to_host(dma_h, &src, &dst,
 							count_left);
 				ON_ERR_GOTO(res, out,
@@ -626,7 +626,7 @@ static fpga_result transferFpgaToFpga(m2m_dma_handle_t *dma_h,
 		if (count_left > 0) {
 			debug_print(
 				"Count_left = %08lx  was transfered using DMA\n",
-				count_left);
+				    count_left);
 			res = _do_dma(dma_h,
 				      (dst + dma_chunks * FPGA_DMA_BUF_SIZE),
 				      (src + dma_chunks * FPGA_DMA_BUF_SIZE),
@@ -647,7 +647,7 @@ static fpga_result transferFpgaToFpga(m2m_dma_handle_t *dma_h,
 		count_left -= (tx_chunks * FPGA_DMA_BUF_ALIGN_SIZE);
 		debug_print(
 			"!!!FPGA to FPGA TX!!! : tx chunks = %d, count = %08lx, dst = %08lx, src = %08lx \n",
-			tx_chunks, count_left, dst, src);
+			    tx_chunks, count_left, dst, src);
 		tmp_buf = (uint64_t *)malloc(FPGA_DMA_BUF_ALIGN_SIZE);
 		fpga_dma_transfer_t tmp_transfer;
 		local_memcpy(&tmp_transfer, m2m_transfer, sizeof(tmp_transfer));
@@ -699,13 +699,14 @@ out_spl:
 static inline double getTime(struct timespec start, struct timespec end)
 {
 	uint64_t diff = 1000000000L * (end.tv_sec - start.tv_sec) + end.tv_nsec
-			- start.tv_nsec;
+		- start.tv_nsec;
 	return (double)diff / (double)1000000000L;
 }
 #endif
 
-static fpga_result fpgaDMATransferSync(m2m_dma_handle_t *dma_h,
-				       fpga_dma_transfer_t *m2m_transfer)
+/* TODO: Verify if change does not break this function */
+fpga_result fpgaDMATransferSync(fpga_dma_handle dma_h,
+				fpga_dma_transfer m2m_transfer)
 {
 
 	fpga_result res = FPGA_OK;
@@ -714,12 +715,12 @@ static fpga_result fpgaDMATransferSync(m2m_dma_handle_t *dma_h,
 	clock_gettime(CLOCK_MONOTONIC, &start);
 #endif
 
-	if (m2m_transfer->transfer_type == HOST_TO_FPGA_MM) {
-		res = transferHostToFpga(dma_h, m2m_transfer, HOST_TO_FPGA_MM);
-	} else if (m2m_transfer->transfer_type == FPGA_TO_HOST_MM) {
-		res = transferFpgaToHost(dma_h, m2m_transfer, FPGA_TO_HOST_MM);
-	} else if (m2m_transfer->transfer_type == FPGA_TO_FPGA_MM) {
-		res = transferFpgaToFpga(dma_h, m2m_transfer, FPGA_TO_FPGA_MM);
+	if (((fpga_dma_transfer_t *) m2m_transfer)->transfer_type == HOST_TO_FPGA_MM) {
+		res = transferHostToFpga((m2m_dma_handle_t *) dma_h, (fpga_dma_transfer_t *) m2m_transfer, HOST_TO_FPGA_MM);
+	} else if (((fpga_dma_transfer_t *) m2m_transfer)->transfer_type == FPGA_TO_HOST_MM) {
+		res = transferFpgaToHost((m2m_dma_handle_t *) dma_h, (fpga_dma_transfer_t *) m2m_transfer, FPGA_TO_HOST_MM);
+	} else if (((fpga_dma_transfer_t *) m2m_transfer)->transfer_type == FPGA_TO_FPGA_MM) {
+		res = transferFpgaToFpga((m2m_dma_handle_t *) dma_h, (fpga_dma_transfer_t *) m2m_transfer, FPGA_TO_FPGA_MM);
 	} else {
 		return FPGA_NOT_SUPPORTED;
 	}
@@ -749,10 +750,10 @@ static fpga_result fpgaDMATransferSync(m2m_dma_handle_t *dma_h,
 			       (long long)buf_full_count);
 			printf("bandwidth = %lf ",
 			       (double)count
-				       / ((double)tot_time * 1000 * 1000));
+			       / ((double)tot_time * 1000 * 1000));
 			printf("wait / busy = %lf\n",
 			       (double)c->poll_wait_count
-				       / (double)c->poll_busy_count);
+			       / (double)c->poll_busy_count);
 			c->call_count = 0;
 		}
 		c->poll_wait_count = 0;
@@ -800,7 +801,7 @@ void *m2mTransactionWorker(void *dma_handle)
 				    (uint32_t)FPGA_DMA_MAX_BUF);
 			m2m_transfer.buffers = (buffer_pool_item **)calloc(
 				m2m_transfer.num_buffers,
-				sizeof(buffer_pool_item *));
+									   sizeof(buffer_pool_item *));
 			uint32_t i;
 			for (i = 0; i < m2m_transfer.num_buffers; i++) {
 				m2m_transfer.buffers[i] =

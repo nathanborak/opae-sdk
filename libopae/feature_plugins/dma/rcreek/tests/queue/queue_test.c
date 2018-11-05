@@ -353,8 +353,8 @@ int main(int argc, char *argv[])
 	}
 	printf("No of DMA channels = %08x\n", count);
 
-	fpga_dma_channel_desc *descs = (fpga_dma_channel_desc *)malloc(
-		sizeof(fpga_dma_channel_desc) * count);
+	fpga_dma_channel *descs = (fpga_dma_channel *)malloc(
+		sizeof(fpga_dma_channel) * count);
 	res = fpgaDMAEnumerateChannels(dma_handle, count, descs, &count);
 	ON_ERR_GOTO(res, free_descs, "fpgaDMAEnumerateChannels");
 	res = fpgaDMAOpenChannel(dma_handle, 0, &threads[0].dma_ch);

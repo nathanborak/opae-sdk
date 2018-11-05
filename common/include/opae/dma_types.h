@@ -101,7 +101,7 @@ typedef enum {
 	DMA_TX_GENERATE_INTERRUPT,
 	DMA_TX_GENERATE_FENCE,
 	DMA_TX_CMD,
-	DMA_TX_FPGA_MAX_CTRL
+	DMA_TX_MAX_CTRL
 } fpga_dma_tx_ctrl_t;
 
 typedef enum {
@@ -110,7 +110,7 @@ typedef enum {
 	DMA_RX_GENERATE_INTERRUPT,
 	DMA_RX_GENERATE_FENCE,
 	DMA_RX_CMD,
-	DMA_RX_FPGA_MAX_CTRL
+	DMA_RX_MAX_CTRL
 } fpga_dma_rx_ctrl_t;
 
 // Channel types

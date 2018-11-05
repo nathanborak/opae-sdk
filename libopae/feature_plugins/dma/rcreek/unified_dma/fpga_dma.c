@@ -801,7 +801,7 @@ fpga_result fpgaDMATransferSync(fpga_dma_handle _dma_h, uint64_t dst,
 fpga_result fpgaDMATransferAsync(fpga_dma_handle dma, uint64_t dst,
 				 uint64_t src, size_t count,
 				 fpga_dma_transfer_type_t type,
-				 fpga_dma_transfer_cb cb, void *context)
+				 fpga_dma_async_tx_cb cb, void *context)
 {
 	// TODO
 	UNUSED(dma);

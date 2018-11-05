@@ -36,7 +36,7 @@ add_executable(queue_test
                queue_test.c)
 
 set_install_rpath(queue_test)
-target_link_libraries(queue_test opae-c fpga_dma_lib)
+target_link_libraries(queue_test opae-c fpga_dma_lib uuid)
 set_property(TARGET queue_test PROPERTY C_STANDARD 99)
 
 install(TARGETS queue_test

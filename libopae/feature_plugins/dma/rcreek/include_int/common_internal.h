@@ -72,13 +72,13 @@
 
 
 // End of feature list
-inline bool _fpga_dma_feature_eol(uint64_t dfh);
+bool _fpga_dma_feature_eol(uint64_t dfh);
 
 // Feature type is BBB
-inline bool _fpga_dma_feature_is_bbb(uint64_t dfh);
+bool _fpga_dma_feature_is_bbb(uint64_t dfh);
 
 // Offset to the next feature header
-inline uint64_t _fpga_dma_feature_next(uint64_t dfh);
+uint64_t _fpga_dma_feature_next(uint64_t dfh);
 
 /**
  * _send_descriptor

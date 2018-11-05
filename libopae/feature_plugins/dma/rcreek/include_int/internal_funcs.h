@@ -47,26 +47,26 @@ int fpgaDMA_setup_sig_handler(fpga_dma_handle_t *dma_h);
 
 void fpgaDMA_restore_sig_handler(fpga_dma_handle_t *dma_h);
 
-inline fpga_result fpgaDMAQueueInit(fpga_dma_handle_t *dma_h, qinfo_t *q);
+fpga_result fpgaDMAQueueInit(fpga_dma_handle_t *dma_h, qinfo_t *q);
 
-inline fpga_result fpgaDMAQueueDestroy(fpga_dma_handle_t *dma_h, qinfo_t *q,
+fpga_result fpgaDMAQueueDestroy(fpga_dma_handle_t *dma_h, qinfo_t *q,
 				       bool free_only);
 
-inline fpga_result fpgaDMAEnqueue(qinfo_t *q, fpga_dma_transfer_t *tf);
+fpga_result fpgaDMAEnqueue(qinfo_t *q, fpga_dma_transfer_t *tf);
 
-inline fpga_result fpgaDMADequeue(qinfo_t *q, fpga_dma_transfer_t *tf);
+fpga_result fpgaDMADequeue(qinfo_t *q, fpga_dma_transfer_t *tf);
 
-inline sem_pool_item *getFreeSemaphore(handle_common *comm, int pshared,
+sem_pool_item *getFreeSemaphore(handle_common *comm, int pshared,
 				       int sem_value);
 
-inline mutex_pool_item *getFreeMutex(handle_common *comm,
+mutex_pool_item *getFreeMutex(handle_common *comm,
 				     pthread_mutexattr_t *attr);
 
-inline buffer_pool_item *getFreeBuffer(handle_common *comm);
+buffer_pool_item *getFreeBuffer(handle_common *comm);
 
-inline void releasePoolItem(handle_common *comm, void *item);
+void releasePoolItem(handle_common *comm, void *item);
 
-inline void destroyAllPoolResources(handle_common *comm, bool free_only);
+void destroyAllPoolResources(handle_common *comm, bool free_only);
 
 // Bind the calling thread to the NUMA node of the device
 int setNUMABindings(fpga_handle fpga_h);
