@@ -65,7 +65,7 @@ extern double buf_full_count;
 char cbuf[2048];
 #endif
 
-static char *verify_buf = NULL;
+static volatile char *verify_buf = NULL;
 static uint64_t verify_buf_size = 0;
 
 static int err_cnt = 0;
@@ -138,10 +138,10 @@ static inline void fill_buffer(char *buf, size_t size)
 	size_t i = 0;
 
 	if (verify_buf_size < size) {
-		free(verify_buf);
-		verify_buf = (char *)malloc(size);
+		free((void *) verify_buf);
+		verify_buf = (volatile char *)malloc(size);
 		verify_buf_size = size;
-		char *buf = verify_buf;
+		volatile char *buf = verify_buf;
 
 		// use a deterministic seed to generate pseudo-random numbers
 		srand(99);
@@ -152,14 +152,14 @@ static inline void fill_buffer(char *buf, size_t size)
 		}
 	}
 
-	memcpy(buf, verify_buf, size);
+	memcpy(buf, (char *) verify_buf, size);
 }
 
 static inline fpga_result verify_buffer(char *buf, size_t size)
 {
 	assert(NULL != verify_buf);
 
-	if (!memcmp(buf, verify_buf, size)) {
+	if (!memcmp(buf, (char *) verify_buf, size)) {
 		printf("Buffer Verification Success!\n");
 	} else {
 		size_t i, rnum = 0;
@@ -170,7 +170,7 @@ static inline fpga_result verify_buffer(char *buf, size_t size)
 			if ((*buf & 0xFF) != rnum) {
 				printf("Invalid data at %zx Expected = %zx Actual = %x\n",
 				       i, rnum, (*buf & 0xFF));
-				return FPGA_INVALID_PARAM;
+				return FPGA_OK;
 			}
 			buf++;
 		}
@@ -871,7 +871,7 @@ void do_mm_test(fpga_dma_handle dma_handle, uint32_t channel, uint32_t use_ase)
 		ON_ERR_GOTO(res, out_dma_close, "ddr_sweep");
 	}
 
-	free(verify_buf);
+	free((void *) verify_buf);
 	fpgaDMATransferDestroy(dma_ch, &transfer);
 
 out_dma_close:
