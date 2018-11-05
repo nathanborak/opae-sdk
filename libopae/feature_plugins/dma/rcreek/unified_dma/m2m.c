@@ -800,8 +800,7 @@ void *m2mTransactionWorker(void *dma_handle)
 				min(m2m_transfer.num_buffers,
 				    (uint32_t)FPGA_DMA_MAX_BUF);
 			m2m_transfer.buffers = (buffer_pool_item **)calloc(
-				m2m_transfer.num_buffers,
-									   sizeof(buffer_pool_item *));
+				m2m_transfer.num_buffers, sizeof(buffer_pool_item *));
 			uint32_t i;
 			for (i = 0; i < m2m_transfer.num_buffers; i++) {
 				m2m_transfer.buffers[i] =
