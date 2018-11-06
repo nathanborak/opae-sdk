@@ -131,13 +131,14 @@ typedef enum {
 
 typedef struct _fpga_dma_channel {
 
-	int ch_id;
-	fpga_dma_channel_type_t ch_type;
 	uint32_t index;
+	uint64_t ch_id;
 
+	fpga_dma_channel_type_t ch_type;
 	fpga_dma_cookie_t cookie;
 	fpga_dma_cookie_t completed_cookie;
 
+	void *device;
 	void *context;
 
 } fpga_dma_channel;
