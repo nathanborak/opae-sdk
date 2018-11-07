@@ -147,7 +147,7 @@ static inline void fill_buffer(char *buf, size_t size)
 		srand(99);
 
 		for (i = 0; i < size; i++) {
-			*buf = rand() % 256;
+			*buf = (char) (rand() % 128);
 			buf++;
 		}
 	}
@@ -162,13 +162,14 @@ static inline fpga_result verify_buffer(char *buf, size_t size)
 	if (!memcmp(buf, verify_buf, size)) {
 		printf("Buffer Verification Success!\n");
 	} else {
-		size_t i, rnum = 0;
+		size_t i;
+		char rnum = 0;
 		srand(99);
 
 		for (i = 0; i < size; i++) {
-			rnum = rand() % 256;
+			rnum = (char) (rand() % 128);
 			if ((*buf & 0xFF) != rnum) {
-				printf("Invalid data at %zx Expected = %zx Actual = %x\n",
+				printf("Invalid data at %zx Expected = %d Actual = %x\n",
 				       i, rnum, (*buf & 0xFF));
 				return FPGA_OK;
 			}
@@ -212,9 +213,8 @@ static inline void report_bandwidth(size_t size, double seconds)
 // return elapsed time
 static inline double getTime(struct timespec start, struct timespec end)
 {
-	uint64_t diff = 1000000000L * (end.tv_sec - start.tv_sec) + end.tv_nsec
-			- start.tv_nsec;
-	return (double)diff / (double)1000000000L;
+	uint64_t diff = 1000000000L * (end.tv_sec - start.tv_sec) + end.tv_nsec - start.tv_nsec;
+	return (double) diff / (double)1000000000L;
 }
 
 static fpga_result ddr_sweep(fpga_dma_channel_handle dma_ch, uint64_t ptr_align,
@@ -343,7 +343,8 @@ static fpga_result ddr_sweep(fpga_dma_channel_handle dma_ch, uint64_t ptr_align,
 	report_bandwidth(total_mem_size * ITERS, tot_time);
 	tot_time = 0.0;
 
-	printf("Verifying buffer..\n");
+	printf("Verifying ending buffer..\n");
+	sleep(2);
 	// verify_buffer((char *)dma_buf_ptr, total_mem_size);
 
 	free_aligned(buf_to_free_ptr);
