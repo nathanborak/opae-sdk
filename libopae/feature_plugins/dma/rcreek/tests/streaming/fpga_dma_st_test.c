@@ -206,7 +206,7 @@ fpga_result run_bw_test(fpga_handle afc_h, fpga_dma_channel_handle dma_m2s_h,
 	dma_tx_buf_ptr = NULL;
 	dma_rx_buf_ptr = NULL;
 
-	ssize_t total_mem_size = (uint64_t)(4 * 1024) * (uint64_t)(1024 * 1024);
+	size_t total_mem_size = (uint64_t)(4 * 1024) * (uint64_t)(1024 * 1024);
 
 	dma_tx_buf_ptr = (uint64_t *)malloc(total_mem_size);
 	dma_rx_buf_ptr = (uint64_t *)malloc(total_mem_size);
