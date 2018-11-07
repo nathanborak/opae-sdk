@@ -345,7 +345,7 @@ static fpga_result ddr_sweep(fpga_dma_channel_handle dma_ch, uint64_t ptr_align,
 
 	printf("Verifying ending buffer..\n");
 	sleep(2);
-	// verify_buffer((char *)dma_buf_ptr, total_mem_size);
+	verify_buffer((char *)dma_buf_ptr, total_mem_size);
 
 	free_aligned(buf_to_free_ptr);
 	fpgaDMATransferDestroy(dma_ch, &transfer);
