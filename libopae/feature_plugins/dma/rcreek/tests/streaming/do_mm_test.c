@@ -113,7 +113,7 @@ static inline void *malloc_aligned(uint64_t align, size_t size)
 	       && ((align & (align - 1)) == 0)); // Must be power of 2 and not 0
 	assert(align >= 2 * sizeof(void *));
 	void *blk = NULL;
-	align = getpagesize();
+
 	blk = mmap(NULL, size + align + 2 * sizeof(void *),
 		   PROT_READ | PROT_WRITE,
 		   MAP_SHARED | MAP_ANONYMOUS | MAP_POPULATE, 0, 0);
@@ -130,7 +130,7 @@ static inline void free_aligned(void *ptr)
 {
 	void **aptr = (void **)ptr;
 	munmap(aptr[-1], (size_t)aptr[-2]);
-	return;
+
 }
 
 static inline void fill_buffer(char *buf, size_t size)
@@ -141,7 +141,7 @@ static inline void fill_buffer(char *buf, size_t size)
 		free(verify_buf);
 		verify_buf = (char *)malloc(size);
 		verify_buf_size = size;
-		char *buf = verify_buf;
+		buf = verify_buf;
 
 		// use a deterministic seed to generate pseudo-random numbers
 		srand(99);
@@ -227,7 +227,8 @@ static fpga_result ddr_sweep(fpga_dma_channel_handle dma_ch, uint64_t ptr_align,
 	fpga_dma_transfer transfer;
 	fpgaDMATransferInit(dma_ch, &transfer);
 
-	ssize_t total_mem_size = size;
+	size_t total_mem_size = size;
+    long sz = sysconf(_SC_PAGESIZE);
 
 	int64_t ITERS = ((uint64_t)4096 * 5) / size;
 	ITERS = 64;
@@ -236,7 +237,7 @@ static fpga_result ddr_sweep(fpga_dma_channel_handle dma_ch, uint64_t ptr_align,
 	ITERS = 10;
 #endif
 
-	uint64_t *dma_buf_ptr = malloc_aligned(getpagesize(), total_mem_size);
+	uint64_t *dma_buf_ptr = malloc_aligned((uint64_t) sz, total_mem_size);
 	if (dma_buf_ptr == NULL) {
 		printf("Unable to allocate %ld bytes of memory",
 		       total_mem_size);
@@ -343,7 +344,7 @@ static fpga_result ddr_sweep(fpga_dma_channel_handle dma_ch, uint64_t ptr_align,
 	report_bandwidth(total_mem_size * ITERS, tot_time);
 	tot_time = 0.0;
 
-	printf("Verifying ending buffer..\n");
+	printf("Verifying buffer..\n");
 	sleep(2);
 	verify_buffer((char *)dma_buf_ptr, total_mem_size);
 
