@@ -436,8 +436,8 @@ void do_mm_test(fpga_dma_handle dma_handle, uint32_t channel, uint32_t use_ase)
 	buf_full_count = 0;
 #endif
 
-	res = verify_buffer((char *)dma_buf_ptr, count);
-	ON_ERR_GOTO(res, out_dma_close, "verify_buffer");
+	// res = verify_buffer((char *)dma_buf_ptr, count);
+	// ON_ERR_GOTO(res, out_dma_close, "verify_buffer");
 
 	clear_buffer((char *)dma_buf_ptr, count);
 
@@ -471,8 +471,8 @@ void do_mm_test(fpga_dma_handle dma_handle, uint32_t channel, uint32_t use_ase)
 	buf_full_count = 0;
 #endif
 
-	res = verify_buffer((char *)dma_buf_ptr, count);
-	ON_ERR_GOTO(res, out_dma_close, "verify_buffer");
+	// res = verify_buffer((char *)dma_buf_ptr, count);
+	// ON_ERR_GOTO(res, out_dma_close, "verify_buffer");
 
 	printf("Starting small buffer test\n");
 
