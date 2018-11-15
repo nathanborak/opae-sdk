@@ -44,7 +44,7 @@ function (Build_GTEST)
     INSTALL_COMMAND "")
 
   set (gtest_root "${CMAKE_CURRENT_BINARY_DIR}/gtest/src/gtest/googletest")
-  message(STATUS "gtest locatet at: ${gtest_root}")
+  message(STATUS "gtest located at: ${gtest_root}")
 
   # Create a libgtest target to be used as a dependency by test programs
   add_library(libgtest IMPORTED STATIC GLOBAL)
@@ -68,6 +68,7 @@ function (Build_GTEST)
   set(GTEST_ROOT ${gtest_root} PARENT_SCOPE)
   set(GTEST_INCLUDE_DIRS ${gtest_root}/include PARENT_SCOPE)
   set(GTEST_MAIN_LIBRARY libgtest_main PARENT_SCOPE)
+  set(GTEST_LIBRARY libgtest PARENT_SCOPE)
   set(GTEST_LIBRARIES libgtest PARENT_SCOPE)
   set(GTEST_BOTH_LIBRARIES libgtest_main libgtest PARENT_SCOPE)
   set(GTEST_FOUND true PARENT_SCOPE)
@@ -160,10 +161,10 @@ function(Build_Test_Target Target_Name Target_LIB)
                                $<BUILD_INTERFACE:${OPAE_INCLUDE_DIR}>
                                $<INSTALL_INTERFACE:include>
                                $<BUILD_INTERFACE:${LIB_SRC_PATH}>)
-                      
-    target_link_libraries(${Target_Name} commonlib safestr ${Target_LIB} ${libjson-c_LIBRARIES} 
+
+    target_link_libraries(${Target_Name} commonlib safestr ${Target_LIB} ${libjson-c_LIBRARIES}
                               uuid ${GTEST_BOTH_LIBRARIES} dl opae-c++-utils opae-c++ opae-cxx-core)
-	  						
+
     if(CMAKE_THREAD_LIBS_INIT)
        target_link_libraries(${Target_Name} "${CMAKE_THREAD_LIBS_INIT}")
     endif()

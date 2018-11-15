@@ -1,4 +1,4 @@
-## Copyright(c) 2018, Intel Corporation
+## Copyright(c) 2017, Intel Corporation
 ##
 ## Redistribution  and  use  in source  and  binary  forms,  with  or  without
 ## modification, are permitted provided that the following conditions are met:
@@ -22,26 +22,40 @@
 ## INTERRUPTION)  HOWEVER CAUSED  AND ON ANY THEORY  OF LIABILITY,  WHETHER IN
 ## CONTRACT,  STRICT LIABILITY,  OR TORT  (INCLUDING NEGLIGENCE  OR OTHERWISE)
 ## ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,  EVEN IF ADVISED OF THE
-## POSSIBILITY OF SUCH DAMAGE.
+## POSSIBILITY OF SUCH DAMAGE
 
-include(test_config)
-include(benchmark_config)
+include(ExternalProject)
 
-include_directories(${OPAE_INCLUDE_DIR}
-                    ${DMA_INCLUDE_DIR})
+# Download and install GoogleBenchmarks
+ExternalProject_Add(
+  gbench
+  GIT_REPOSITORY "https://github.com/google/benchmark.git"
+  GIT_TAG "v1.4.1"
+  UPDATE_COMMAND ""
+  PREFIX ${CMAKE_CURRENT_BINARY_DIR}/gbench
+  CMAKE_ARGS -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DBENCHMARK_ENAGLE_GTEST_TESTS=off
+  # Disable install step
+  INSTALL_COMMAND "")
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -flto")
+set (gbench_root "${CMAKE_CURRENT_BINARY_DIR}/gbench/src/gbench")
+message(STATUS "gbenchmark located at: ${gbench_root}")
 
-add_executable(fpga_dma_st_test
-               fpga_dma_st_test.c
-               do_mm_test.c
-               fpga_pattern_checker.c
-               fpga_pattern_gen.c)
+# Create a benchmark target to be used as a dependency by test programs
+add_library(libbenchmark IMPORTED STATIC GLOBAL ALL)
+add_library(libbenchmark_main IMPORTED STATIC GLOBAL)
 
-set_install_rpath(fpga_dma_st_test)
-target_link_libraries(fpga_dma_st_test opae-c fpga_dma_lib uuid rt m libbenchmark libbenchmark_main)
-set_property(TARGET fpga_dma_st_test PROPERTY C_STANDARD 99)
+add_dependencies(libbenchmark benchmark)
+add_dependencies(libbenchmark_main benchmark_main)
 
-install(TARGETS fpga_dma_st_test
-    RUNTIME DESTINATION bin
-    COMPONENT toolfpgainfo)
+# Get GTest source and binary directories from CMake project
+ExternalProject_Get_Property(gbench source_dir binary_dir)
+
+# Set libgtest properties
+set_target_properties(libbenchmark PROPERTIES
+  "IMPORTED_LOCATION" "${binary_dir}/libbenchmark.a"
+  "IMPORTED_LINK_INTERFACE_LIBRARIES" "${CMAKE_THREAD_LIBS_INIT}")
+
+# Set libgtest_main properties
+set_target_properties(libbenchmark_main PROPERTIES
+  "IMPORTED_LOCATION" "${binary_dir}/libbenchmark_main.a"
+  "IMPORTED_LINK_INTERFACE_LIBRARIES" "${CMAKE_THREAD_LIBS_INIT}")

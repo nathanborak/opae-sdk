@@ -387,7 +387,7 @@ void do_mm_test(fpga_dma_handle dma_handle, uint32_t channel, uint32_t use_ase)
 
 	// Test procedure
 	// - Fill host buffer with pseudo-random data
-	// - Copy from host buffer to FPGA buffer at address 0x0
+	// - Copy from host buffer to FPGA buffer at address 0x0H
 	// - Clear host buffer
 	// - Copy from FPGA buffer to host buffer
 	// - Verify host buffer data
