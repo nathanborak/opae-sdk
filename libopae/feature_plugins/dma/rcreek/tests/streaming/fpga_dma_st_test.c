@@ -83,12 +83,15 @@ int sendrxTransfer(fpga_dma_channel_handle dma_h, fpga_dma_transfer rx_transfer,
 	fpga_result res = FPGA_OK;
 	if (attr_reset)
 		fpgaDMATransferReset(dma_h, rx_transfer);
-	fpgaDMATransferSetSrc(rx_transfer, src);
-	fpgaDMATransferSetDst(rx_transfer, dst);
-	fpgaDMATransferSetLen(rx_transfer, tf_len);
-	fpgaDMATransferSetTransferType(rx_transfer, tf_type);
-	fpgaDMATransferSetRxControl(rx_transfer, rx_ctrl);
-	fpgaDMATransferSetTransferCallback(rx_transfer, cb, NULL);
+	struct fpga_dma_transfer rx_transfer = {
+		.src = src,
+		.dst = dst,
+		.tf_len = tf_len,
+		.tf_type = tf_type,
+		.tx_ctrl = tx_ctrl,
+		.cb = NULL
+	};
+	
 	res = fpgaDMATransferStart(dma_h, rx_transfer);
 	return res;
 }
@@ -101,12 +104,14 @@ int sendtxTransfer(fpga_dma_channel_handle dma_h, fpga_dma_transfer tx_transfer,
 	fpga_result res = FPGA_OK;
 	if (attr_reset)
 		fpgaDMATransferReset(dma_h, tx_transfer);
-	fpgaDMATransferSetSrc(tx_transfer, src);
-	fpgaDMATransferSetDst(tx_transfer, dst);
-	fpgaDMATransferSetLen(tx_transfer, tf_len);
-	fpgaDMATransferSetTransferType(tx_transfer, tf_type);
-	fpgaDMATransferSetTxControl(tx_transfer, tx_ctrl);
-	fpgaDMATransferSetTransferCallback(tx_transfer, cb, NULL);
+	struct fpga_dma_transfer tx_transfer = {
+		.src = src,
+		.dst = dst,
+		.tf_len = tf_len,
+		.tf_type = tf_type,
+		.tx_ctrl = tx_ctrl,
+		.cb = NULL
+	};
 	res = fpgaDMATransferStart(dma_h, tx_transfer);
 	return res;
 }
