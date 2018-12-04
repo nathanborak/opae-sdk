@@ -274,11 +274,14 @@ static fpga_result ddr_sweep(fpga_dma_channel_handle dma_ch, uint64_t ptr_align,
 	poll_wait_count = 0;
 	buf_full_count = 0;
 #endif
-	fpgaDMATransferSetSrc(transfer, src);
-	fpgaDMATransferSetDst(transfer, dst);
-	fpgaDMATransferSetLen(transfer, total_mem_size);
-	fpgaDMATransferSetTransferType(transfer, HOST_TO_FPGA_MM);
-	fpgaDMATransferSetTransferCallback(transfer, NULL, NULL);
+	struct fpga_dma_transfer transfer = {
+		.src = src,
+		.dst = dst,
+		.tf_len = tf_len,
+		.tf_type = HOST_TO_FPGA_MM,
+		.tx_ctrl = tx_ctrl,
+		.cb = NULL
+	};
 
 	for (i = 0; i < ITERS; i++) {
 		clock_gettime(CLOCK_MONOTONIC, &start);
@@ -315,11 +318,15 @@ static fpga_result ddr_sweep(fpga_dma_channel_handle dma_ch, uint64_t ptr_align,
 	poll_wait_count = 0;
 	buf_full_count = 0;
 #endif
-	fpgaDMATransferSetSrc(transfer, src);
-	fpgaDMATransferSetDst(transfer, dst);
-	fpgaDMATransferSetLen(transfer, total_mem_size);
-	fpgaDMATransferSetTransferType(transfer, FPGA_TO_HOST_MM);
-	fpgaDMATransferSetTransferCallback(transfer, NULL, NULL);
+
+	struct fpga_dma_transfer transfer = {
+		.src = src,
+		.dst = dst,
+		.tf_len = tf_len,
+		.tf_type = FPGA_TO_HOST_MM,
+		.tx_ctrl = tx_ctrl,
+		.cb = NULL
+	};
 
 	for (i = 0; i < ITERS; i++) {
 		clock_gettime(CLOCK_MONOTONIC, &start);
@@ -484,14 +491,14 @@ void do_mm_test(fpga_dma_handle dma_handle, uint32_t channel, uint32_t use_ase)
 				 &sm_transfer);
 	fill_buffer(&buf_ptr[2048], 0x3800);
 
-	fpgaDMATransferSetSrc(sm_transfer, (uint64_t)&buf_ptr[2048]);
-	fpgaDMATransferSetDst(sm_transfer, 0x200);
-	fpgaDMATransferSetLen(sm_transfer, 0x3800);
-	fpgaDMATransferSetTransferType(sm_transfer, HOST_TO_FPGA_MM);
-	fpgaDMATransferSetTransferCallback(sm_transfer, NULL, NULL);
-	res = fpgaDMATransferStart(dma_ch, sm_transfer);
-	ON_ERR_GOTO(res, out_dma_close, "fpgaDMATransferSync HOST_TO_FPGA_MM");
-	clear_buffer(buf_ptr, siz_buf);
+	struct fpga_dma_transfer transfer = {
+		.src = src,
+		.dst = dst,
+		.tf_len = tf_len,
+		.tf_type = HOST_TO_FPGA_MM,
+		.tx_ctrl = tx_ctrl,
+		.cb = NULL
+	};
 
 #ifdef CHECK_DELAYS
 	printf("H->F size 0x%lx, %s\n", 0x3800, showDelays(cbuf));
@@ -500,11 +507,16 @@ void do_mm_test(fpga_dma_handle dma_handle, uint32_t channel, uint32_t use_ase)
 #endif
 
 	// copy from fpga to host
-	fpgaDMATransferSetSrc(sm_transfer, 0x200);
-	fpgaDMATransferSetDst(sm_transfer, (uint64_t)&buf_ptr[1024]);
-	fpgaDMATransferSetLen(sm_transfer, 0x3800);
-	fpgaDMATransferSetTransferType(sm_transfer, FPGA_TO_HOST_MM);
-	fpgaDMATransferSetTransferCallback(sm_transfer, NULL, NULL);
+	struct fpga_dma_transfer sm_transfer = {
+		.src = src,
+		.dst = dst,
+		.tf_len = tf_len,
+		.tf_type = HOST_TO_FPGA_MM,
+		.tx_ctrl = tx_ctrl,
+		.cb = NULL
+	};
+
+	
 	res = fpgaDMATransferStart(dma_ch, sm_transfer);
 	ON_ERR_GOTO(res, out_dma_close, "fpgaDMATransferSync FPGA_TO_HOST_MM");
 
@@ -538,10 +550,6 @@ void do_mm_test(fpga_dma_handle dma_handle, uint32_t channel, uint32_t use_ase)
 	sb_size = 0x1000;
 	sb_num_xfers = siz_buf / sb_size;
 
-	fpgaDMATransferSetLen(sm_transfer, sb_size);
-	fpgaDMATransferSetTransferType(sm_transfer, HOST_TO_FPGA_MM);
-	fpgaDMATransferSetTransferCallback(sm_transfer, async_cb, NULL);
-
 	for (ii = 0; ii < 1000; ii++) {
 		sb_src = (uint64_t)buf_ptr;
 		sb_dst = 0x200;
@@ -549,8 +557,7 @@ void do_mm_test(fpga_dma_handle dma_handle, uint32_t channel, uint32_t use_ase)
 
 		clock_gettime(CLOCK_MONOTONIC, &start);
 		for (sb_i = 0; sb_i < sb_num_xfers; sb_i++) {
-			fpgaDMATransferSetSrc(sm_transfer, sb_src);
-			fpgaDMATransferSetDst(sm_transfer, sb_dst);
+
 			res = fpgaDMATransferStart(dma_ch, sm_transfer);
 			ON_ERR_GOTO(res, out_dma_close,
 				    "fpgaDMATransferSync HOST_TO_FPGA_MM");
@@ -590,8 +597,6 @@ void do_mm_test(fpga_dma_handle dma_handle, uint32_t channel, uint32_t use_ase)
 
 		clock_gettime(CLOCK_MONOTONIC, &start);
 		for (sb_i = 0; sb_i < sb_num_xfers; sb_i++) {
-			fpgaDMATransferSetSrc(sm_transfer, sb_src);
-			fpgaDMATransferSetDst(sm_transfer, sb_dst);
 			res = fpgaDMATransferStart(dma_ch, sm_transfer);
 			ON_ERR_GOTO(res, out_dma_close,
 				    "fpgaDMATransferSync FPGA_TO_HOST_MM");
@@ -624,10 +629,6 @@ void do_mm_test(fpga_dma_handle dma_handle, uint32_t channel, uint32_t use_ase)
 	sb_size = siz_buf / 2;
 	sb_num_xfers = siz_buf / sb_size;
 
-	fpgaDMATransferSetLen(sm_transfer, sb_size);
-	fpgaDMATransferSetTransferType(sm_transfer, HOST_TO_FPGA_MM);
-	fpgaDMATransferSetTransferCallback(sm_transfer, async_cb, NULL);
-
 	for (ii = 0; ii < 1000; ii++) {
 		sb_src = (uint64_t)buf_ptr;
 		sb_dst = 0x0;
@@ -635,8 +636,7 @@ void do_mm_test(fpga_dma_handle dma_handle, uint32_t channel, uint32_t use_ase)
 
 		clock_gettime(CLOCK_MONOTONIC, &start);
 		for (sb_i = 0; sb_i < sb_num_xfers; sb_i++) {
-			fpgaDMATransferSetSrc(sm_transfer, sb_src);
-			fpgaDMATransferSetDst(sm_transfer, sb_dst);
+
 			res = fpgaDMATransferStart(dma_ch, sm_transfer);
 			ON_ERR_GOTO(res, out_dma_close,
 				    "fpgaDMATransferSync HOST_TO_FPGA_MM");
@@ -669,8 +669,7 @@ void do_mm_test(fpga_dma_handle dma_handle, uint32_t channel, uint32_t use_ase)
 
 		clock_gettime(CLOCK_MONOTONIC, &start);
 		for (sb_i = 0; sb_i < sb_num_xfers; sb_i++) {
-			fpgaDMATransferSetSrc(sm_transfer, sb_src);
-			fpgaDMATransferSetDst(sm_transfer, sb_dst);
+
 			res = fpgaDMATransferStart(dma_ch, sm_transfer);
 			ON_ERR_GOTO(res, out_dma_close,
 				    "fpgaDMATransferSync FPGA_TO_HOST_MM");
