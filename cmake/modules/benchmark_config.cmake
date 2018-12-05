@@ -52,10 +52,10 @@ ExternalProject_Get_Property(gbench source_dir binary_dir)
 
 # Set libgtest properties
 set_target_properties(libbenchmark PROPERTIES
-  "IMPORTED_LOCATION" "${binary_dir}/libbenchmark.a"
+  "IMPORTED_LOCATION" "${binary_dir}/src/libbenchmark.a"
   "IMPORTED_LINK_INTERFACE_LIBRARIES" "${CMAKE_THREAD_LIBS_INIT}")
 
 # Set libgtest_main properties
 set_target_properties(libbenchmark_main PROPERTIES
-  "IMPORTED_LOCATION" "${binary_dir}/libbenchmark_main.a"
+  "IMPORTED_LOCATION" "${binary_dir}/src/libbenchmark_main.a"
   "IMPORTED_LINK_INTERFACE_LIBRARIES" "${CMAKE_THREAD_LIBS_INIT}")
