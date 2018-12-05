@@ -24,20 +24,35 @@
 ## ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,  EVEN IF ADVISED OF THE
 ## POSSIBILITY OF SUCH DAMAGE.
 
-set(DMA_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
-set(DMA_INCLUDE_INT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include_int)
+include(test_config)
+include(benchmark_config)
 
-# utils
-add_subdirectory(utils)
+include_directories(${OPAE_INCLUDE_DIR})
+set(TARGET_SRC gtmain.cpp)
 
-# UMDs
-add_subdirectory(unified_dma)
+add_executable(gtmain_dma ${TARGET_SRC})
+target_include_directories(gtmain_dma PUBLIC
+  $<BUILD_INTERFACE:${GTEST_INCLUDE_DIRS}>
+  $<BUILD_INTERFACE:${GBENCH_INCLUDE_DIRS}>
+  $<BUILD_INTERFACE:${OPAE_INCLUDE_DIR}>
+  $<INSTALL_INTERFACE:include>)
 
-# tests
-add_subdirectory(tests/streaming)
-add_subdirectory(tests/queue)
-add_subdirectory(tests/pool)
-add_subdirectory(tests/lock)
+message("hi = ${GBENCH_INCLUDE_DIRS}")
 
-# Benchmarking
-add_subdirectory(gtest)
+target_link_libraries(gtmain_dma
+  safestr
+  uuid
+  ${GTEST_BOTH_LIBRARIES}
+  dl
+  opae-c++
+  opae-cxx-core
+  libbenchmark
+  libbenchmark_main)
+
+if(CMAKE_THREAD_LIBS_INIT)
+  target_link_libraries(gtmain_dma "${CMAKE_THREAD_LIBS_INIT}")
+endif()
+
+if(THREADS_HAVE_PTHREAD_ARG)
+  target_compile_options(PUBLIC ${Target_Name} "-pthread")
+endif()

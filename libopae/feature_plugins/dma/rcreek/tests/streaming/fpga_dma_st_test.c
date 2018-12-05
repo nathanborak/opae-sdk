@@ -64,16 +64,17 @@ void do_mm_test(fpga_handle afc_h, uint32_t channel, uint32_t use_ase);
 /*
  * macro for checking return codes
  */
-#define ON_ERR_GOTO(res, label, desc)                                          \
-	do {                                                                   \
-		if ((res) != FPGA_OK) {                                        \
-			err_cnt++;                                             \
-			fprintf(stderr, "Error %s: %s\n", (desc),              \
-				fpgaErrStr(res));                              \
-			goto label;                                            \
-		}                                                              \
-	} while (0)
-
+#define ON_ERR_GOTO(res, label, desc)					\
+	do {								\
+		if ((res) != FPGA_OK) {					\
+			err_cnt++;					\
+			fprintf(stderr, "Error %s: %s\n", (desc),	\
+				fpgaErrStr(res));			\
+			goto label;					\
+		}							\
+	} while (0)							\
+									\
+									\
 
 int sendrxTransfer(fpga_dma_channel_handle dma_h, fpga_dma_transfer rx_transfer,
 		   uint64_t src, uint64_t dst, uint64_t tf_len,
@@ -94,9 +95,9 @@ int sendrxTransfer(fpga_dma_channel_handle dma_h, fpga_dma_transfer rx_transfer,
 }
 
 int sendtxTransfer(fpga_dma_channel_handle dma_h, fpga_dma_transfer tx_transfer,
-		   uint64_t src, uint64_t dst, uint64_t tf_len,
-		   fpga_dma_transfer_type_t tf_type, fpga_dma_tx_ctrl_t tx_ctrl,
-		   fpga_dma_async_tx_cb cb, int attr_reset)
+                   uint64_t src, uint64_t dst, uint64_t tf_len,
+                   fpga_dma_transfer_type_t tf_type, fpga_dma_tx_ctrl_t tx_ctrl,
+                   fpga_dma_async_tx_cb cb, int attr_reset)
 {
 	fpga_result res = FPGA_OK;
 	if (attr_reset)
@@ -192,12 +193,12 @@ void report_bandwidth(size_t size, double seconds)
 double getTime(struct timespec start, struct timespec end)
 {
 	uint64_t diff = 1000000000L * (end.tv_sec - start.tv_sec) + end.tv_nsec
-			- start.tv_nsec;
+		- start.tv_nsec;
 	return (double)diff / (double)1000000000L;
 }
 
 fpga_result run_bw_test(fpga_handle afc_h, fpga_dma_channel_handle dma_m2s_h,
-			fpga_dma_channel_handle dma_s2m_h)
+                        fpga_dma_channel_handle dma_s2m_h)
 {
 	int res;
 	struct timespec start, end;
@@ -265,8 +266,8 @@ fpga_result run_bw_test(fpga_handle afc_h, fpga_dma_channel_handle dma_m2s_h,
 	clock_gettime(CLOCK_MONOTONIC, &start);
 	res = sendrxTransfer(
 		dma_s2m_h, rx_transfer, 0, (uint64_t)dma_rx_buf_ptr,
-		total_mem_size, FPGA_ST_TO_HOST_MM, DMA_RX_NO_PACKET,
-		rxtransferComplete, 1 /*reset transfer attributes*/);
+			     total_mem_size, FPGA_ST_TO_HOST_MM, DMA_RX_NO_PACKET,
+			     rxtransferComplete, 1 /*reset transfer attributes*/);
 	if (res != FPGA_OK) {
 		printf(" sendrxTransfer FPGA to Host failed with error %s",
 		       fpgaErrStr(res));
@@ -408,12 +409,12 @@ int main(int argc, char *argv[])
 #if HWLOC_API_VERSION > 0x00020000
 			retval = hwloc_set_membind(
 				topology, obj2->nodeset, HWLOC_MEMBIND_THREAD,
-				HWLOC_MEMBIND_MIGRATE
-					| HWLOC_MEMBIND_BYNODESET);
+						   HWLOC_MEMBIND_MIGRATE
+						   | HWLOC_MEMBIND_BYNODESET);
 #else
 			retval = hwloc_set_membind_nodeset(
 				topology, obj2->nodeset, HWLOC_MEMBIND_THREAD,
-				HWLOC_MEMBIND_MIGRATE);
+							   HWLOC_MEMBIND_MIGRATE);
 #endif
 			ON_ERR_GOTO(retval, out_destroy_tok,
 				    "hwloc_set_membind");
@@ -522,8 +523,8 @@ int main(int argc, char *argv[])
 
 	res = sendtxTransfer(
 		dma_h[tx_index], tx_transfer, (uint64_t)dma_tx_buf_ptr, 0,
-		transfer_len, HOST_MM_TO_FPGA_ST, DMA_TX_NO_PACKET,
-		txtransferComplete, 1 /*reset transfer attributes*/);
+			     transfer_len, HOST_MM_TO_FPGA_ST, DMA_TX_NO_PACKET,
+			     txtransferComplete, 1 /*reset transfer attributes*/);
 	ON_ERR_GOTO(res, free_descs, "sendtxTransfer");
 
 	sem_wait(&tx_cb_status);
@@ -542,8 +543,8 @@ int main(int argc, char *argv[])
 
 	res = sendtxTransfer(
 		dma_h[tx_index], tx_transfer, (uint64_t)dma_tx_buf_ptr, 0,
-		transfer_len, HOST_MM_TO_FPGA_ST, DMA_TX_GENERATE_EOP,
-		txtransferComplete, 1 /*reset transfer attributes*/);
+			     transfer_len, HOST_MM_TO_FPGA_ST, DMA_TX_GENERATE_EOP,
+			     txtransferComplete, 1 /*reset transfer attributes*/);
 	ON_ERR_GOTO(res, out_dma_close, "sendtxTransfer");
 
 	sem_wait(&tx_cb_status);
@@ -564,8 +565,8 @@ int main(int argc, char *argv[])
 
 	res = sendrxTransfer(
 		dma_h[rx_index], rx_transfer, 0, (uint64_t)dma_rx_buf_ptr,
-		transfer_len, FPGA_ST_TO_HOST_MM, DMA_RX_NO_PACKET,
-		rxtransferComplete, 1 /*reset transfer attributes*/);
+			     transfer_len, FPGA_ST_TO_HOST_MM, DMA_RX_NO_PACKET,
+			     rxtransferComplete, 1 /*reset transfer attributes*/);
 	ON_ERR_GOTO(res, out_dma_close, "sendrxTransfer");
 
 	res = wait_for_generator_complete(afc_h);

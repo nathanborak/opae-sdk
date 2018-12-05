@@ -78,12 +78,13 @@ find_package(Doxygen)
 find_package(Threads REQUIRED)
 find_package(Sphinx)
 include(dependency_notifier)
+include(benchmark_config)
 
 ############################################################################
 ## set libs install location ###############################################
 ############################################################################
 
-get_property(LIB64 GLOBAL PROPERTY FIND_LIBRARY_USE_LIB64_PATHS) 	
+get_property(LIB64 GLOBAL PROPERTY FIND_LIBRARY_USE_LIB64_PATHS)
 if ("${LIB64}" STREQUAL "TRUE")
     set_cached_variable(OPAE_LIB_INSTALL_DIR "lib64")
 else()

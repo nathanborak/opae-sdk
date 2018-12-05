@@ -26,36 +26,49 @@
 
 include(ExternalProject)
 
-# Download and install GoogleBenchmarks
-ExternalProject_Add(
-  gbench
-  GIT_REPOSITORY "https://github.com/google/benchmark.git"
-  GIT_TAG "v1.4.1"
-  UPDATE_COMMAND ""
-  PREFIX ${CMAKE_CURRENT_BINARY_DIR}/gbench
-  CMAKE_ARGS -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DBENCHMARK_ENAGLE_GTEST_TESTS=off
-  # Disable install step
-  INSTALL_COMMAND "")
+if (COMMAND _build_gbench)
+  return()
+endif()
 
-set (gbench_root "${CMAKE_CURRENT_BINARY_DIR}/gbench/src/gbench")
-message(STATUS "gbenchmark located at: ${gbench_root}")
+function(_build_gbench)
+  find_package(PackageHandleStandardArgs REQUIRED)
 
-# Create a benchmark target to be used as a dependency by test programs
-add_library(libbenchmark IMPORTED STATIC GLOBAL ALL)
-add_library(libbenchmark_main IMPORTED STATIC GLOBAL)
+  # Download and install GoogleBenchmarks
+  ExternalProject_Add(
+    gbench
+    GIT_REPOSITORY "https://github.com/google/benchmark.git"
+    GIT_TAG "v1.4.1"
+    UPDATE_COMMAND ""
+    PREFIX ${CMAKE_CURRENT_BINARY_DIR}/gbench
+    CMAKE_ARGS -DCMAKE_POSITION_INDEPENDENT_CODE=ON
+    # Disable install step
+    INSTALL_COMMAND "")
 
-add_dependencies(libbenchmark benchmark)
-add_dependencies(libbenchmark_main benchmark_main)
+  set (gbench_root "${CMAKE_CURRENT_BINARY_DIR}/gbench/src/gbench")
+  message(STATUS "gbenchmark located at: ${gbench_root}")
 
-# Get GTest source and binary directories from CMake project
-ExternalProject_Get_Property(gbench source_dir binary_dir)
+  # Create a benchmark target to be used as a dependency by test programs
+  add_library(libbenchmark IMPORTED STATIC GLOBAL ALL)
+  add_library(libbenchmark_main IMPORTED STATIC GLOBAL)
 
-# Set libgtest properties
-set_target_properties(libbenchmark PROPERTIES
-  "IMPORTED_LOCATION" "${binary_dir}/src/libbenchmark.a"
-  "IMPORTED_LINK_INTERFACE_LIBRARIES" "${CMAKE_THREAD_LIBS_INIT}")
+  add_dependencies(libbenchmark gbench)
+  add_dependencies(libbenchmark_main gbench)
 
-# Set libgtest_main properties
-set_target_properties(libbenchmark_main PROPERTIES
-  "IMPORTED_LOCATION" "${binary_dir}/src/libbenchmark_main.a"
-  "IMPORTED_LINK_INTERFACE_LIBRARIES" "${CMAKE_THREAD_LIBS_INIT}")
+  # Get GTest source and binary directories from CMake project
+  ExternalProject_Get_Property(gbench source_dir binary_dir)
+
+  set(GBENCH_INCLUDE_DIRS ${source_dir}/include PARENT_SCOPE)
+
+  # Set libgtest properties
+  set_target_properties(libbenchmark PROPERTIES
+    "IMPORTED_LOCATION" "${binary_dir}/src/libbenchmark.a"
+    "IMPORTED_LINK_INTERFACE_LIBRARIES" "${CMAKE_THREAD_LIBS_INIT}")
+
+  # Set libgtest_main properties
+  set_target_properties(libbenchmark_main PROPERTIES
+    "IMPORTED_LOCATION" "${binary_dir}/src/libbenchmark_main.a"
+    "IMPORTED_LINK_INTERFACE_LIBRARIES" "${CMAKE_THREAD_LIBS_INIT}")
+
+endfunction()
+
+_build_gbench()
