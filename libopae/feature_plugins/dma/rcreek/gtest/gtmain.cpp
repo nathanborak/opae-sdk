@@ -49,6 +49,8 @@ static uint64_t verify_buf_size = 0;
 
 static volatile uint32_t async_buf_count = 0;
 
+using namespace std;
+
 static inline void *malloc_aligned(uint64_t align, size_t size)
 {
 	assert(align
@@ -96,14 +98,14 @@ static inline void fill_buffer(char *buf, size_t size)
 		}
 	}
 
-	memcpy(buf, verify_buf, size);
+	::memcpy(buf, verify_buf, size);
 }
 
 static inline fpga_result verify_buffer(char *buf, size_t size)
 {
 	assert(NULL != verify_buf);
 
-	if (!memcmp(buf, verify_buf, size)) {
+	if (!::memcmp(buf, verify_buf, size)) {
 		printf("Buffer Verification Success!\n");
 	} else {
 		size_t i;
@@ -126,7 +128,7 @@ static inline fpga_result verify_buffer(char *buf, size_t size)
 
 static inline void clear_buffer(char *buf, size_t size)
 {
-	memset(buf, 0, size);
+	::memset(buf, 0, size);
 }
 
 class dma_benchmark : public ::benchmark::Fixture {
@@ -151,13 +153,13 @@ static void CustomArguments(benchmark::internal::Benchmark* b) {
 		b->Arg(1024 + i * 2 * 1024);
 }
 
-int function(int x) {
+int myfunction(int x) {
 	return 2*x;
 }
 
 BENCHMARK_DEFINE_F(dma_benchmark, Unique)(benchmark::State& state) {
 	while (state.KeepRunning()) {
-		function(2);
+		myfunction(2);
 	}
 }
 BENCHMARK_REGISTER_F(dma_benchmark, Unique)->Apply(CustomArguments)->Unit(benchmark::kMillisecond);
