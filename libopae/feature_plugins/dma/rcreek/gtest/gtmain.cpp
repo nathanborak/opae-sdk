@@ -176,9 +176,9 @@ class dma_benchmark : public ::benchmark::Fixture {
 		assert(fpgaPropertiesSetGUID(filter[0], guid) == FPGA_OK);
 		assert(fpgaPropertiesSetGUID(filter[1], mm_guid) == FPGA_OK);
 		assert(fpgaEnumerate(&filter[0], 2, &afc_token, 1, &num_matches) == FPGA_OK);
-		assert(num_matches > 1);
+		assert(num_matches >= 1);
 
-		channel = 1;
+		channel = 0;
 		assert(fpgaOpen(afc_token, &afc_h, 0) == FPGA_OK);
 		assert(fpgaDMAOpenChannel(dma_handle, channel, &dma_ch) == FPGA_OK);
 
@@ -194,9 +194,8 @@ class dma_benchmark : public ::benchmark::Fixture {
 		assert(fpgaClose(afc_h) == FPGA_OK);
 		assert(fpgaDestroyToken(&afc_token) == FPGA_OK);
 		assert(fpgaDestroyProperties(&filter[0]) == FPGA_OK);
-		assert(fpgaDestroyProperties(&filter[1]));
+		assert(fpgaDestroyProperties(&filter[1]) == FPGA_OK);
 	};
-
 
 	void send_dma_sync(int count) {
 
