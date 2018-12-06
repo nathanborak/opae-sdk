@@ -37,8 +37,6 @@ target_include_directories(gtmain_dma PUBLIC
   $<BUILD_INTERFACE:${OPAE_INCLUDE_DIR}>
   $<INSTALL_INTERFACE:include>)
 
-message("hi = ${GBENCH_INCLUDE_DIRS}")
-
 target_link_libraries(gtmain_dma
   safestr
   uuid
@@ -46,6 +44,7 @@ target_link_libraries(gtmain_dma
   dl
   opae-c++
   opae-cxx-core
+  fpga_dma_lib
   libbenchmark
   libbenchmark_main)
 
