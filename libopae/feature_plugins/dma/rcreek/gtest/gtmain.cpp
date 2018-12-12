@@ -213,7 +213,7 @@ class dma_benchmark : public ::benchmark::Fixture {
 		// Create an aligned buffer and fill it with data
 		dma_buf_ptr = (uint64_t *) malloc_aligned(pg_size_*count, pg_size_);
 		assert(dma_buf_ptr);
-		fill_buffer((char *)dma_buf_ptr, count);
+		// fill_buffer((char *)dma_buf_ptr, count);
 
 		// Copy from host to fpga
 		poll_wait_count = 0;
@@ -227,8 +227,8 @@ class dma_benchmark : public ::benchmark::Fixture {
 
 /* Generate arguments for polling time vs buffer size */
 static void CustomArguments(benchmark::internal::Benchmark* b) {
-	for (int i = 0; i <= 5; ++i)
-		for (int j = 32; j <= 1024*1024; j *= 8)
+	for (int i = 1; i <= 1024; i *= 2)
+		for (int j = 1; j <= 1000; j *= 10)
 			b->ArgPair(i, j);
 }
 
@@ -240,4 +240,4 @@ BENCHMARK_DEFINE_F(dma_benchmark, bw01)(benchmark::State& state) {
 }
 BENCHMARK_REGISTER_F(dma_benchmark, bw01)->Apply(CustomArguments);
 
-BENCHMARK_MA
+BENCHMARK_MAIN();
