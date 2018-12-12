@@ -83,7 +83,7 @@ void free_aligned(void *p)
 }
 
 class dma_benchmark : public ::benchmark::Fixture {
-    private:
+    protected:
 	fpga_properties filter[2];
 	fpga_token afc_token;
 	fpga_handle afc_h;
@@ -97,14 +97,10 @@ class dma_benchmark : public ::benchmark::Fixture {
 	uint64_t *dma_buf_ptr;
 
 	size_t pg_size_;
-	double poll_wait_count;
-	double buf_full_count;
-
-	vector<unsigned char> verify_buf;
+	vector<char> verify_buf;
 	uint64_t verify_buf_size;
-	volatile uint32_t async_buf_count;
 
-    private:
+    protected:
 	void fill_buffer(char *buf, size_t size)
 	{
 
@@ -115,7 +111,7 @@ class dma_benchmark : public ::benchmark::Fixture {
 
 			// use a deterministic seed to generate pseudo-random numbers
 			::srand(99);
-			::generate(verify_buf.begin(), verify_buf.end(), [] () mutable {return (unsigned char) (std::rand() % 128);});
+			::generate(verify_buf.begin(), verify_buf.end(), [] () mutable {return (char) (std::rand() % 128);});
 		}
 
 		::memcpy(buf, verify_buf.data(), size);
@@ -152,14 +148,13 @@ class dma_benchmark : public ::benchmark::Fixture {
 	}
 
     public:
-	virtual void SetUp(const ::benchmark::State& st) override {
 
-		int payload_size = st.range(0);
-		(void) payload_size;
-
+	dma_benchmark() {
+		// Global setup code
 		fpga_guid guid;
 		fpga_guid mm_guid;
 		uint32_t num_matches;
+		uint32_t count = 0;
 
 		filter[0] = {nullptr};
 		filter[1] = {nullptr};
@@ -190,39 +185,47 @@ class dma_benchmark : public ::benchmark::Fixture {
 		assert(fpgaPropertiesSetGUID(filter[1], mm_guid) == FPGA_OK);
 		assert(fpgaEnumerate(&filter[0], 2, &afc_token, 1, &num_matches) == FPGA_OK);
 		assert(num_matches >= 1);
-
 		assert(fpgaOpen(afc_token, &afc_h, 0) == FPGA_OK);
-		// assert(fpgaDMAOpenChannel(dma_handle, channel, &dma_ch) == FPGA_OK);
 
- 	};
+		// Enumerate DMA handles
+		assert(fpgaDMAOpen(afc_h, &dma_handle) == FPGA_OK);
+		assert(fpgaDMAEnumerateChannels(dma_handle, 0, NULL, &count) == FPGA_OK);
+		assert(count > 0);
+		int channel = 0;
+		assert(fpgaDMAOpenChannel(dma_handle, channel, &dma_ch) == FPGA_OK);
 
-	virtual void TearDown(const ::benchmark::State&) override {
-		// if (dma_ch)
-		// 	assert(fpgaDMACloseChannel(&dma_ch) == FPGA_OK);
+ 	}
 
-		// assert(fpgaDMAClose(&dma_handle) == FPGA_OK);
-		// assert(fpgaUnmapMMIO(afc_h, 0) == FPGA_OK);
+	~dma_benchmark() {
+		// Global teardown code
+		assert(fpgaDMACloseChannel(&dma_ch) == FPGA_OK);
+		assert(fpgaDMAClose(&dma_handle) == FPGA_OK);
 		assert(fpgaClose(afc_h) == FPGA_OK);
 		assert(fpgaDestroyToken(&afc_token) == FPGA_OK);
 		assert(fpgaDestroyProperties(&filter[0]) == FPGA_OK);
 		assert(fpgaDestroyProperties(&filter[1]) == FPGA_OK);
-	};
+	}
 
-	void send_dma_sync(int count) {
+	virtual void TearDown(const ::benchmark::State& st) override {
+		(void) st;
+	}
 
-		(void) count;
+	virtual void SetUp(const ::benchmark::State& st) override {
+		(void) st;
+	}
 
-		// Create an aligned buffer and fill it with data
-		dma_buf_ptr = (uint64_t *) malloc_aligned(pg_size_*count, pg_size_);
-		assert(dma_buf_ptr);
-		fill_buffer((char *) dma_buf_ptr, pg_size_*count);
+	void dma_host_to_fpga_sync(int count, uint64_t *dma_buf_ptr) {
+		fpga_dma_transfer transfer;
+		fpgaDMATransferInit(dma_ch, &transfer);
 
-		// Copy from host to fpga
-		poll_wait_count = 0;
-		buf_full_count = 0;
+		fpgaDMATransferSetSrc(transfer, (uint64_t) dma_buf_ptr);
+		fpgaDMATransferSetDst(transfer, 0);
+		fpgaDMATransferSetLen(transfer, count * pg_size_);
+		fpgaDMATransferSetTransferType(transfer, HOST_TO_FPGA_MM);
+		fpgaDMATransferSetTransferCallback(transfer, NULL, NULL);
+		// fpgaDMATransferStart(dma_ch, transfer);
 
-		// Free the aligned buffer
-		free_aligned(dma_buf_ptr);
+		fpgaDMATransferDestroy(dma_ch, &transfer);
 	}
 
 };
@@ -236,10 +239,21 @@ static void CustomArguments(benchmark::internal::Benchmark* b) {
 
 
 BENCHMARK_DEFINE_F(dma_benchmark, bw01)(benchmark::State& state) {
+
+	// Setup code
+	uint64_t *dma_buf_ptr = nullptr;
+	dma_buf_ptr = (uint64_t *) malloc_aligned(pg_size_*state.range(0), pg_size_);
+	assert(dma_buf_ptr);
+	fill_buffer((char *) dma_buf_ptr, pg_size_*state.range(0));
+
+
 	while (state.KeepRunning()) {
-		send_dma_sync(state.range(0));
+		dma_host_to_fpga_sync(state.range(0), dma_buf_ptr);
 	}
+
+	free_aligned(dma_buf_ptr);
+
 }
-BENCHMARK_REGISTER_F(dma_benchmark, bw01)->Apply(CustomArguments);
+BENCHMARK_REGISTER_F(dma_benchmark, bw01)->Apply(CustomArguments)->Threads(1);
 
 BENCHMARK_MAIN();
