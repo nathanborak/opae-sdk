@@ -26,6 +26,7 @@
 
 #include <iostream>
 #include <memory>
+#include <vector>
 
 #include <unistd.h>
 #include <hwloc.h>
@@ -99,7 +100,7 @@ class dma_benchmark : public ::benchmark::Fixture {
 	double poll_wait_count;
 	double buf_full_count;
 
-	shared_ptr<char> verify_buf;
+	vector<unsigned char> verify_buf;
 	uint64_t verify_buf_size;
 	volatile uint32_t async_buf_count;
 
@@ -107,23 +108,24 @@ class dma_benchmark : public ::benchmark::Fixture {
 	void fill_buffer(char *buf, size_t size)
 	{
 
+		(void) buf;
 		if (verify_buf_size < size) {
-			verify_buf = make_shared<char> (size);
 			verify_buf_size = size;
+			verify_buf.resize(size);
 
 			// use a deterministic seed to generate pseudo-random numbers
 			::srand(99);
-			::generate_n(verify_buf.get(), size, [] () mutable {return (char) std::rand() % 128;});
+			::generate(verify_buf.begin(), verify_buf.end(), [] () mutable {return (unsigned char) (std::rand() % 128);});
 		}
 
-		::memcpy(buf, verify_buf.get(), size);
+		::memcpy(buf, verify_buf.data(), size);
 	}
 
 	fpga_result verify_buffer(char *buf, size_t size)
 	{
-		assert(verify_buf != nullptr);
+		assert(verify_buf.data() != nullptr);
 
-		if (!::memcmp(buf, verify_buf.get(), size)) {
+		if (!::memcmp(buf, verify_buf.data(), size)) {
 			printf("Buffer Verification Success!\n");
 		} else {
 			size_t i;
@@ -213,7 +215,7 @@ class dma_benchmark : public ::benchmark::Fixture {
 		// Create an aligned buffer and fill it with data
 		dma_buf_ptr = (uint64_t *) malloc_aligned(pg_size_*count, pg_size_);
 		assert(dma_buf_ptr);
-		// fill_buffer((char *)dma_buf_ptr, count);
+		fill_buffer((char *) dma_buf_ptr, pg_size_*count);
 
 		// Copy from host to fpga
 		poll_wait_count = 0;
