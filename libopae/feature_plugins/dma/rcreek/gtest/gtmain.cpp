@@ -240,14 +240,11 @@ BENCHMARK_DEFINE_F(dma_benchmark, mm_host_to_fpga)(benchmark::State& state) {
 	assert(src);
 	fill_buffer((char *) src, count);
 
-	while(state.KeepRunning())
-	{
+	for (auto _ : state) {
 		dma_host_to_fpga_sync(count, src);
 	}
 
-	// actually messages, not bytes:
-	state.SetBytesProcessed(
-		static_cast<int64_t>(state.iterations()) * count);
+	state.SetBytesProcessed(uint64_t(state.iterations()) * uint64_t(count));
 
 }
 BENCHMARK_REGISTER_F(dma_benchmark, mm_host_to_fpga)->Apply(CustomArguments);
