@@ -42,44 +42,31 @@
 
 using namespace std;
 
-void *malloc_aligned(size_t bytes, size_t alignment)
+// Aligned malloc
+static inline void *malloc_aligned(uint64_t size, size_t align)
 {
-	void *p1 ,*p2; // basic pointer needed for computation.
+	assert(align
+	       && ((align & (align - 1)) == 0)); // Must be power of 2 and not 0
+	assert(align >= 2 * sizeof(void *));
+	void *blk = NULL;
 
-	/* We need to use malloc provided by C. First we need to allocate memory
-	   of size bytes + alignment + sizeof(size_t) . We need 'bytes' because
-	   user requested it. We need to add 'alignment' because malloc can give us
-	   any address and we need to find multiple of 'alignment', so at maximum multiple
-	   of alignment will be 'alignment' bytes away from any location. We need
-	   'sizeof(size_t)' for implementing 'aligned_free', since we are returning modified
-	   memory pointer, not given by malloc, to the user, we must free the memory
-	   allocated by malloc not anything else. So I am storing address given by malloc above
-	   pointer returning to user. Thats why I need extra space to store that address.
-	   Then I am checking for error returned by malloc, if it returns NULL then
-	   aligned_malloc will fail and return NULL. */
-	if((p1 =(void *) malloc(bytes + alignment + sizeof(size_t)))==NULL)
-		return NULL;
-
-	/* Next step is to find aligned memory address multiples of alignment.
-	   By using basic formule I am finding next address after p1 which is
-	   multiple of alignment.I am storing new address in p2. */
-	size_t addr=(size_t)p1+alignment+sizeof(size_t);
-
-	p2=(void *)(addr - (addr%alignment));
-
-	/* Final step, I am storing the address returned by malloc 'p1' just "size_t"
-	   bytes above p2, which will be useful while calling aligned_free. */
-	*((size_t *)p2-1)=(size_t)p1;
-
-	return p2;
+	blk = mmap(NULL, size + align + 2 * sizeof(void *),
+		   PROT_READ | PROT_WRITE,
+		   MAP_SHARED | MAP_ANONYMOUS | MAP_POPULATE, 0, 0);
+	void **aptr =
+		(void **)(((uint64_t)blk + 2 * sizeof(void *) + (align - 1))
+			  & ~(align - 1));
+	aptr[-1] = blk;
+	aptr[-2] = (void *)(size + align + 2 * sizeof(void *));
+	return aptr;
 }
 
-void free_aligned(void *p)
+// Aligned free
+static inline void free_aligned(void *ptr)
 {
-	/*	Find the address stored by aligned_malloc ,"size_t" bytes above the
-		current pointer then free it using normal free routine provided by C.
-	*/
-	free((void *)(*((size_t *) p-1)));
+	void **aptr = (void **)ptr;
+	munmap(aptr[-1], (size_t)aptr[-2]);
+
 }
 
 class dma_benchmark : public ::benchmark::Fixture {
@@ -194,9 +181,13 @@ class dma_benchmark : public ::benchmark::Fixture {
 		int channel = 0;
 		assert(fpgaDMAOpenChannel(dma_handle, channel, &dma_ch) == FPGA_OK);
 
+		dma_buf_ptr = (uint64_t *) malloc_aligned(32 * 1024 * 1024, pg_size_);
+		madvise(dma_buf_ptr, count, MADV_SEQUENTIAL);
+
  	}
 
 	~dma_benchmark() {
+
 		// Global teardown code
 		assert(fpgaDMACloseChannel(&dma_ch) == FPGA_OK);
 		assert(fpgaDMAClose(&dma_handle) == FPGA_OK);
@@ -204,6 +195,8 @@ class dma_benchmark : public ::benchmark::Fixture {
 		assert(fpgaDestroyToken(&afc_token) == FPGA_OK);
 		assert(fpgaDestroyProperties(&filter[0]) == FPGA_OK);
 		assert(fpgaDestroyProperties(&filter[1]) == FPGA_OK);
+
+		free_aligned(dma_buf_ptr);
 	}
 
 	virtual void TearDown(const ::benchmark::State& st) override {
@@ -218,7 +211,6 @@ class dma_benchmark : public ::benchmark::Fixture {
 		fpga_dma_transfer transfer;
 		fpgaDMATransferInit(dma_ch, &transfer);
 
-		// std::cout<<"address = "<<std::hex<<dma_buf_ptr<<endl;
 		fpgaDMATransferSetSrc(transfer, (uint64_t) dma_buf_ptr);
 		fpgaDMATransferSetDst(transfer, 0);
 		fpgaDMATransferSetLen(transfer, count);
@@ -231,9 +223,9 @@ class dma_benchmark : public ::benchmark::Fixture {
 
 };
 
-/* Generate arguments for polling time vs buffer size */
+/* Generate arguments for input buffer size */
 static void CustomArguments(benchmark::internal::Benchmark* b) {
-	for (int i = 4; i <= 10; i += 2)
+	for (int i = 4; i <= 16; i += 4)
 		for (int j = 1; j <= 1; j *= 10)
 			b->ArgPair(i, j);
 }
@@ -243,18 +235,19 @@ BENCHMARK_DEFINE_F(dma_benchmark, mm_host_to_fpga)(benchmark::State& state) {
 
 	// Setup code
 	const size_t count = state.range(0) * 1024 * 1024;
-	uint64_t *dma_buf_ptr = nullptr;
-	dma_buf_ptr = (uint64_t *) malloc_aligned(count, pg_size_);
-	madvise(dma_buf_ptr, count, MADV_SEQUENTIAL);
+	uint64_t *src = dma_buf_ptr;
 
-	assert(dma_buf_ptr);
-	fill_buffer((char *) dma_buf_ptr, count);
+	assert(src);
+	fill_buffer((char *) src, count);
 
-	for (auto _ : state)
-		dma_host_to_fpga_sync(count, dma_buf_ptr);
+	while(state.KeepRunning())
+	{
+		dma_host_to_fpga_sync(count, src);
+	}
 
-	// Tear-down code
-	// free_aligned(dma_buf_ptr);
+	// actually messages, not bytes:
+	state.SetBytesProcessed(
+		static_cast<int64_t>(state.iterations()) * count);
 
 }
 BENCHMARK_REGISTER_F(dma_benchmark, mm_host_to_fpga)->Apply(CustomArguments);

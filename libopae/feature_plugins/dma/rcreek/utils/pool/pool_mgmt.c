@@ -492,10 +492,6 @@ static inline void destroyBuffers(handle_common *comm, bool free_only)
 	buffer_pool_item **in_use_head = &comm->dma_h->buffer_in_use_head;
 	buffer_pool_item **free_head = &comm->dma_h->buffer_free_head;
 
-	if (!free_only && curr) {
-		FPGA_DMA_ST_WARN("Destroying buffer while marked in-use");
-	}
-
 	print_lists("destroyBuffers head", comm);
 
 	while (!free_only && curr) {

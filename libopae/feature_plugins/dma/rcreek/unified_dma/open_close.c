@@ -33,14 +33,17 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
-#include <opae/fpga.h>
 #include <stddef.h>
 #include <poll.h>
 #include <errno.h>
 #include <unistd.h>
 #include <assert.h>
 #include <math.h>
+#include <time.h>
+
 #include <safe_string/safe_string.h>
+#include <opae/fpga.h>
+
 #include "fpga_dma_internal.h"
 #include "fpga_dma.h"
 
@@ -369,6 +372,7 @@ free_dma_h:
 
 fpga_result fpgaDMAClose(fpga_dma_handle *_dma_h)
 {
+
 	fpga_result res = FPGA_OK;
 	fpga_dma_handle_t *dma_h = (fpga_dma_handle_t *)*_dma_h;
 	fpga_dma_transfer_t kill_transfer = {.transfer_type = TERMINATE_THREAD};
