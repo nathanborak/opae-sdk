@@ -255,12 +255,12 @@ inline buffer_pool_item *getFreeBuffer(handle_common *comm)
 		res = fpgaPrepareBuffer(comm->fpga_h, siz,
 					(void **)&(new_buffer->dma_buf_ptr),
 					&new_buffer->dma_buf_wsid, 0);
+		assert(res == FPGA_OK);
 		ON_ERR_GOTO(res, out_unlock, "fpgaPrepareBuffer");
 
 		res = fpgaGetIOAddress(comm->fpga_h, new_buffer->dma_buf_wsid,
 				       &new_buffer->dma_buf_iova);
 		ON_ERR_GOTO(res, rel_buf, "fpgaGetIOAddress");
-
 
 		new_buffer->header.type = POOL_BUFFERS;
 		new_buffer->size = siz;

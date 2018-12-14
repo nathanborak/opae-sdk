@@ -218,12 +218,13 @@ class dma_benchmark : public ::benchmark::Fixture {
 		fpga_dma_transfer transfer;
 		fpgaDMATransferInit(dma_ch, &transfer);
 
+		// std::cout<<"address = "<<std::hex<<dma_buf_ptr<<endl;
 		fpgaDMATransferSetSrc(transfer, (uint64_t) dma_buf_ptr);
 		fpgaDMATransferSetDst(transfer, 0);
-		fpgaDMATransferSetLen(transfer, count * pg_size_);
+		fpgaDMATransferSetLen(transfer, count);
 		fpgaDMATransferSetTransferType(transfer, HOST_TO_FPGA_MM);
 		fpgaDMATransferSetTransferCallback(transfer, NULL, NULL);
-		// fpgaDMATransferStart(dma_ch, transfer);
+		fpgaDMATransferStart(dma_ch, transfer);
 
 		fpgaDMATransferDestroy(dma_ch, &transfer);
 	}
@@ -232,28 +233,30 @@ class dma_benchmark : public ::benchmark::Fixture {
 
 /* Generate arguments for polling time vs buffer size */
 static void CustomArguments(benchmark::internal::Benchmark* b) {
-	for (int i = 1; i <= 1024; i *= 2)
-		for (int j = 1; j <= 1000; j *= 10)
+	for (int i = 4; i <= 10; i += 2)
+		for (int j = 1; j <= 1; j *= 10)
 			b->ArgPair(i, j);
 }
 
 
-BENCHMARK_DEFINE_F(dma_benchmark, bw01)(benchmark::State& state) {
+BENCHMARK_DEFINE_F(dma_benchmark, mm_host_to_fpga)(benchmark::State& state) {
 
 	// Setup code
+	const size_t count = state.range(0) * 1024 * 1024;
 	uint64_t *dma_buf_ptr = nullptr;
-	dma_buf_ptr = (uint64_t *) malloc_aligned(pg_size_*state.range(0), pg_size_);
+	dma_buf_ptr = (uint64_t *) malloc_aligned(count, pg_size_);
+	madvise(dma_buf_ptr, count, MADV_SEQUENTIAL);
+
 	assert(dma_buf_ptr);
-	fill_buffer((char *) dma_buf_ptr, pg_size_*state.range(0));
+	fill_buffer((char *) dma_buf_ptr, count);
 
+	for (auto _ : state)
+		dma_host_to_fpga_sync(count, dma_buf_ptr);
 
-	while (state.KeepRunning()) {
-		dma_host_to_fpga_sync(state.range(0), dma_buf_ptr);
-	}
-
-	free_aligned(dma_buf_ptr);
+	// Tear-down code
+	// free_aligned(dma_buf_ptr);
 
 }
-BENCHMARK_REGISTER_F(dma_benchmark, bw01)->Apply(CustomArguments)->Threads(1);
+BENCHMARK_REGISTER_F(dma_benchmark, mm_host_to_fpga)->Apply(CustomArguments);
 
 BENCHMARK_MAIN();

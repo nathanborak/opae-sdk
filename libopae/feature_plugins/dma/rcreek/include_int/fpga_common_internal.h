@@ -203,7 +203,7 @@
 #define FPGA_DMA_MAX_BUF 8
 
 // Max. async transfers in progress
-#define FPGA_DMA_MAX_INFLIGHT_TRANSACTIONS 100000
+#define FPGA_DMA_MAX_INFLIGHT_TRANSACTIONS 10000000
 #define INVALID_CHANNEL (0x7fffffffffffffffULL)
 
 typedef enum _pool_type {

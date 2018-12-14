@@ -306,6 +306,7 @@ static fpga_result transferHostToFpga(m2m_dma_handle_t *dma_h,
 
 	// All same sized buffers
 	uint64_t buffer_size = buffers[0]->size;
+	assert(buffer_size > 0);
 
 	if (count_left) {
 		uint64_t dma_chunks = count_left / buffer_size;
@@ -334,12 +335,13 @@ static fpga_result transferHostToFpga(m2m_dma_handle_t *dma_h,
 			uint64_t dma_buf_iova =
 				buffers[i % num_buffers]->dma_buf_iova
 				| FPGA_DMA_HOST_MASK;
+			assert(dma_buf_ptr);
 			if (do_memcpy) {
-				local_memcpy(dma_buf_ptr,
-					     (void *)(src + i * buffer_size),
-					     (i == (dma_chunks - 1))
-					     ? dma_last_chunk
-					     : buffer_size);
+				memcpy(dma_buf_ptr, // address of pin buffer to be sent
+				       (void *)(src + i * buffer_size),
+				       (i == (dma_chunks - 1))
+				       ? dma_last_chunk
+				       : buffer_size);
 			}
 			if ((ping_pong
 			     && ((i % (uint64_t)half_num_buffers
@@ -796,9 +798,11 @@ void *m2mTransactionWorker(void *dma_handle)
 			m2m_transfer.num_buffers =
 				((m2m_transfer.len + FPGA_DMA_BUF_SIZE - 1)
 				 / FPGA_DMA_BUF_SIZE);
+			assert(m2m_transfer.num_buffers > 0);
 			m2m_transfer.num_buffers =
 				min(m2m_transfer.num_buffers,
 				    (uint32_t)FPGA_DMA_MAX_BUF);
+			assert(m2m_transfer.num_buffers > 0);
 			m2m_transfer.buffers = (buffer_pool_item **)calloc(
 				m2m_transfer.num_buffers, sizeof(buffer_pool_item *));
 			uint32_t i;
