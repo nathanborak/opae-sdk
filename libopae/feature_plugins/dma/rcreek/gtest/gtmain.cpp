@@ -181,7 +181,7 @@ class dma_benchmark : public ::benchmark::Fixture {
 		int channel = 0;
 		assert(fpgaDMAOpenChannel(dma_handle, channel, &dma_ch) == FPGA_OK);
 
-		dma_buf_ptr = (uint64_t *) malloc_aligned(32 * 1024 * 1024, pg_size_);
+		dma_buf_ptr = (uint64_t *) malloc_aligned(64 * 1024 * 1024, pg_size_);
 		madvise(dma_buf_ptr, count, MADV_SEQUENTIAL);
 
  	}
@@ -225,7 +225,7 @@ class dma_benchmark : public ::benchmark::Fixture {
 
 /* Generate arguments for input buffer size */
 static void CustomArguments(benchmark::internal::Benchmark* b) {
-	for (int i = 4; i <= 16; i += 4)
+	for (int i = 64; i >= 4; i -= 4)
 		for (int j = 1; j <= 1; j *= 10)
 			b->ArgPair(i, j);
 }
@@ -244,7 +244,7 @@ BENCHMARK_DEFINE_F(dma_benchmark, mm_host_to_fpga)(benchmark::State& state) {
 		dma_host_to_fpga_sync(count, src);
 	}
 
-	state.SetBytesProcessed(uint64_t(state.iterations()) * uint64_t(count));
+	state.SetBytesProcessed(uint64_t(state.iterations()) * uint64_t(count) / 256);
 
 }
 BENCHMARK_REGISTER_F(dma_benchmark, mm_host_to_fpga)->Apply(CustomArguments);
