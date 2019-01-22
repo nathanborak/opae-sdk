@@ -26,7 +26,7 @@ The ASE provides a consistent transaction-level hardware interface and software 
 that allows you to develop a production-quality Accelerated Functional Unit (AFU) and host software application.
 The ASE supports both the Intel Xeon&reg; Processor with Integrated FPGA and the Intel Acceleration Stack for Intel
 Xeon CPU with FPGAs also called the Intel Programmable Acceleration Card (PAC). The figures in this user guide illustrate
-the Intel PAC with Arria&reg; 10 GX FPGA. The figures show a local memory that is only available on the PAC.
+the Intel PAC with Stratix&reg; 10 SX FPGA. The figures show a local memory that is only available on the PAC.
 
 To use the ASE Environment you must have source code in a language that RTL simulators can interpret. The following languages are possible:
 
@@ -54,7 +54,7 @@ The ASE provides two interfaces:
 
 * Hardware: Core Cache Interface (CCI-P) specification implemented in SystemVerilog.
 
-Use these interfaces to deploy your IP on the Integrated FPGA Platform or the Intel PAC with Arria 10 GX FPGA.
+Use these interfaces to deploy your IP on the Integrated FPGA Platform or the Intel PAC with Stratix 10 SX FPGA.
 
 ### ASE Capabilities ###
 
